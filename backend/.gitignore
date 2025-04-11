@@ -1,0 +1,51 @@
+# バイナリファイル
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# テストバイナリ
+*.test
+
+# カバレッジファイル
+*.out
+
+# 依存関係ディレクトリ
+/vendor/
+
+# 環境設定ファイル
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# ビルド出力
+/bin/
+/dist/
+
+# IDE設定
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# デバッグファイル
+debug
+
+# ログファイル
+*.log
+
+# キャッシュディレクトリ
+.cache/
+
+# macOS固有のファイル
+.DS_Store
+
+# Windowsサムネイル
+Thumbs.db
+
+# テンポラリファイル
+tmp/
+temp/

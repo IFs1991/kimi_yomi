@@ -1,0 +1,331 @@
+# Backend Structure Definition
+
+backend:
+  main.go:
+    content: |-
+      バックエンドのメインエントリーポイント
+      - Ginルーターの設定
+      - ミドルウェアの初期化
+      - APIルーティング
+      - データベース接続設定
+      - Redisキャッシュ設定
+      - 決済サービス初期化
+      - スケジューラー初期化
+    dependency:
+      - api/v1/auth/auth.go
+      - api/v1/diagnosis/diagnosis.go
+      - api/v1/compatibility/compatibility.go
+      - api/v1/payment/payment.go
+      - api/v1/content/content.go
+      - api/v1/subscription/subscription.go
+    agent: "claude-3-5-sonnet"
+
+  api:
+    v1:
+      auth:
+        auth.go:
+          content: |-
+            認証関連のAPIハンドラー
+            - ユーザー登録
+            - ログイン処理
+            - JWTトークン生成
+            - メール認証
+            - パスワードリセット
+          dependency:
+            - services/auth_service.go
+            - models/user.go
+          agent: "claude-3-5-sonnet"
+
+      payment:
+        payment.go:
+          content: |-
+            決済関連のAPIハンドラー
+            - 決済処理
+            - 支払い履歴
+            - 定期課金管理
+            - 決済キャンセル処理
+          dependency:
+            - services/payment_service.go
+            - models/payment.go
+            - models/subscription.go
+          agent: "claude-3-5-sonnet"
+
+      content:
+        content.go:
+          content: |-
+            コンテンツ管理APIハンドラー
+            - コンテンツ一覧取得
+            - コンテンツ詳細取得
+            - 購入済みコンテンツ管理
+            - メディアファイル配信
+          dependency:
+            - services/content_service.go
+            - models/content.go
+            - models/media.go
+          agent: "claude-3-5-sonnet"
+
+      subscription:
+        subscription.go:
+          content: |-
+            サブスクリプション管理APIハンドラー
+            - プラン管理
+            - 購読状態管理
+            - 更新スケジュール管理
+            - 通知設定
+          dependency:
+            - services/subscription_service.go
+            - models/subscription.go
+          agent: "claude-3-5-sonnet"
+
+      diagnosis:
+        diagnosis.go:
+          content: |-
+            性格診断関連のAPIハンドラー
+            - 診断質問の取得
+            - 回答の処理
+            - 診断結果の生成と保存
+            - 過去の診断履歴
+          dependency:
+            - services/diagnosis_service.go
+            - models/diagnosis.go
+          agent: "claude-3-5-sonnet"
+
+      compatibility:
+        compatibility.go:
+          content: |-
+            相性診断関連のAPIハンドラー
+            - 相性計算ロジック
+            - マッチング結果生成
+            - 日替わり相性診断
+            - 詳細アドバイス生成
+          dependency:
+            - services/compatibility_service.go
+            - models/compatibility.go
+          agent: "claude-3-5-sonnet"
+
+  services:
+    auth_service.go:
+      content: |-
+        認証サービスの実装
+        - Firebase認証連携
+        - JWTトークン管理
+        - パスワードハッシュ化
+        - セッション管理
+      dependency:
+        - models/user.go
+      agent: "claude-3-5-sonnet"
+
+    diagnosis_service.go:
+      content: |-
+        診断サービスの実装
+        - 質問バンクの管理
+        - 回答データの分析
+        - 性格タイプの判定
+        - レポート生成
+      dependency:
+        - models/diagnosis.go
+      agent: "claude-3-5-sonnet"
+
+    compatibility_service.go:
+      content: |-
+        相性診断サービスの実装
+        - 相性アルゴリズム
+        - スコア計算
+        - レコメンデーション
+        - マッチング履歴管理
+      dependency:
+        - models/compatibility.go
+      agent: "claude-3-5-sonnet"
+
+    cache_service.go:
+      content: |-
+        キャッシュサービスの実装
+        - Redisキャッシュ管理
+        - キャッシュ有効期限設定
+        - 分散ロック処理
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    ai_service.go:
+      content: |-
+        AI機能サービスの実装
+        - OpenAI APIとの連携
+        - プロンプト管理
+        - レスポンス生成
+        - コンテキスト管理
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    payment_service.go:
+      content: |-
+        決済サービスの実装
+        - Stripe決済処理
+        - 支払い履歴管理
+        - 定期課金処理
+        - 返金処理
+      dependency:
+        - models/payment.go
+        - models/user.go
+      agent: "claude-3-5-sonnet"
+
+    content_service.go:
+      content: |-
+        コンテンツ管理サービス
+        - コンテンツ配信管理
+        - アクセス権限管理
+        - メディアファイル管理
+        - コンテンツ更新管理
+      dependency:
+        - models/content.go
+        - models/media.go
+      agent: "claude-3-5-sonnet"
+
+    subscription_service.go:
+      content: |-
+        サブスクリプション管理サービス
+        - プラン管理
+        - 課金スケジュール管理
+        - 更新通知管理
+        - アクセス権限制御
+      dependency:
+        - models/subscription.go
+        - models/user.go
+      agent: "claude-3-5-sonnet"
+
+    scheduler_service.go:
+      content: |-
+        スケジューラーサービス
+        - コンテンツ更新スケジュール
+        - 定期課金処理スケジュール
+        - 通知スケジュール
+        - バッチ処理管理
+      dependency:
+        - models/content.go
+        - models/subscription.go
+      agent: "claude-3-5-sonnet"
+
+  models:
+    user.go:
+      content: |-
+        ユーザーモデルの定義
+        - プロフィール情報
+        - 認証情報
+        - アカウント設定
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    diagnosis.go:
+      content: |-
+        診断モデルの定義
+        - 質問データ構造
+        - 回答データ構造
+        - 診断結果形式
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    compatibility.go:
+      content: |-
+        相性診断モデルの定義
+        - マッチングデータ構造
+        - 相性スコア定義
+        - アドバイスデータ形式
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    payment.go:
+      content: |-
+        決済モデルの定義
+        - 決済情報
+        - 支払い履歴
+        - 課金状態
+        - 決済方法
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    subscription.go:
+      content: |-
+        サブスクリプションモデルの定義
+        - プラン情報
+        - 購読状態
+        - 課金周期
+        - 支払いステータス
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    content.go:
+      content: |-
+        コンテンツモデルの定義
+        - コンテンツ情報
+        - 価格設定
+        - 公開スケジュール
+        - アクセス権限
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    media.go:
+      content: |-
+        メディアモデルの定義
+        - メディアファイル情報
+        - ファイル形式
+        - ストレージ情報
+        - 配信設定
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+  config:
+    database:
+      content: |-
+        データベース設定
+        - PostgreSQL接続設定
+        - マイグレーション管理
+        - バックアップ設定
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    redis:
+      content: |-
+        Redisキャッシュ設定
+        - 接続設定
+        - キャッシュ戦略
+        - パフォーマンス最適化
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    ai:
+      content: |-
+        AI設定
+        - OpenAI API設定
+        - モデル選択
+        - プロンプトテンプレート
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    payment:
+      content: |-
+        決済設定
+        - Stripe API設定
+        - 決済環境設定
+        - 通貨設定
+        - 手数料設定
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    storage:
+      content: |-
+        ストレージ設定
+        - クラウドストレージ設定
+        - メディアファイル保存設定
+        - CDN設定
+        - キャッシュ設定
+      dependency: []
+      agent: "claude-3-5-sonnet"
+
+    scheduler:
+      content: |-
+        スケジューラー設定
+        - ジョブスケジュール設定
+        - 実行間隔設定
+        - タイムゾーン設定
+        - リトライ設定
+      dependency: []
+      agent: "claude-3-5-sonnet"

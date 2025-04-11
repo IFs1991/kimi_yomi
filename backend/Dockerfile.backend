@@ -1,0 +1,46 @@
+# ビルドステージ
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+
+# ビルドに必要な依存関係をインストール
+RUN apk add --no-cache git
+
+# 依存関係をコピーしてダウンロード
+COPY ../backend/go.mod ../backend/go.sum ./
+RUN go mod download
+
+# ソースコードをコピー
+COPY ../backend .
+
+# アプリケーションをビルド
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+
+# 実行ステージ
+FROM alpine:latest
+
+WORKDIR /app
+
+# セキュリティ更新とCA証明書のインストール
+RUN apk --no-cache add ca-certificates tzdata && \
+    update-ca-certificates
+
+# ビルドしたバイナリをコピー
+COPY --from=builder /app/main .
+
+# 必要な設定ファイルをコピー
+COPY --from=builder /app/config ./config
+
+# 非rootユーザーで実行
+RUN adduser -D appuser
+USER appuser
+
+# 環境変数のデフォルト値を設定
+ENV PORT=8080 \
+    GIN_MODE=release
+
+# ヘルスチェックのためのエンドポイントを公開
+EXPOSE 8080
+
+# アプリケーションを実行
+CMD ["./main"]

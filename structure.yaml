@@ -1,0 +1,327 @@
+src:
+  structure.yaml:
+    content: |-
+      プロジェクト全体構造の概要
+      - バックエンド: Go (Gin, GORM)
+      - フロントエンド: Flutter
+      - 認証: Firebase / JWT
+      - データベース: PostgreSQL
+      - キャッシュ: Redis
+      - 主要機能:
+        * ユーザー認証
+        * 性格診断
+        * 相性診断
+        * アプリ内課金 (Apple App Store, Google Play Store)
+    dependency: []
+    agent: "claude-3-5-sonnet-20241022"
+    api: []
+
+  backend:
+    main.go:
+      content: |-
+        バックエンドのメインエントリーポイント
+        - Ginルーターの設定
+        - ミドルウェアの初期化
+        - APIルーティング
+      dependency:
+        - src/backend/api/v1/auth/auth.go
+        - src/backend/api/v1/diagnosis/diagnosis.go
+        - src/backend/api/v1/compatibility/compatibility.go
+        - src/backend/api/v1/purchase/purchase.go
+      agent: "deepseek-chat"
+      api: []
+
+    api:
+      v1:
+        auth:
+          auth.go:
+            content: |-
+              認証関連のAPIハンドラー
+              - ユーザー登録
+              - ログイン
+              - メール/年齢認証
+              - パスワードリセット
+            dependency:
+              - src/backend/services/auth_service.go
+              - src/backend/models/user.go
+            agent: "deepseek-chat"
+            api: []
+
+        diagnosis:
+          diagnosis.go:
+            content: |-
+              診断関連のAPIハンドラー
+              - 質問取得
+              - 回答送信
+              - 結果取得
+            dependency:
+              - src/backend/services/diagnosis_service.go
+              - src/backend/models/diagnosis.go
+            agent: "deepseek-chat"
+            api: []
+
+        compatibility:
+          compatibility.go:
+            content: |-
+              相性診断関連のAPIハンドラー
+              - 日替わり相性
+              - 相性診断
+              - プレミアムコンテンツ
+            dependency:
+              - src/backend/services/compatibility_service.go
+              - src/backend/models/compatibility.go
+            agent: "deepseek-chat"
+            api: []
+        purchase:
+          purchase.go:
+            content: |-
+              課金関連のAPIハンドラー
+              - Apple App Store の課金検証
+              - Google Play Store の課金検証
+            dependency:
+              - src/backend/services/purchase_service.go
+              - src/backend/models/purchase.go
+            agent: "deepseek-chat"
+            api: []
+
+    services:
+      auth_service.go:
+        content: |-
+          認証サービスの実装
+          - ユーザー登録
+          - ログイン
+          - パスワード管理
+        dependency:
+          - src/backend/models/user.go
+        agent: "deepseek-chat"
+        api: []
+
+      diagnosis_service.go:
+        content: |-
+          診断サービスの実装
+          - 質問取得
+          - 回答処理
+          - 結果生成
+        dependency:
+          - src/backend/models/diagnosis.go
+        agent: "deepseek-chat"
+        api: []
+
+      compatibility_service.go:
+        content: |-
+          相性診断サービスの実装
+          - 相性スコア計算
+          - アドバイス生成
+          - トピック提案
+        dependency:
+          - src/backend/models/compatibility.go
+        agent: "deepseek-chat"
+        api: []
+      purchase_service.go:
+        content: |-
+          課金サービスの実装
+          - Apple App Store の課金検証
+          - Google Play Store の課金検証
+          - 購入情報の保存
+        dependency:
+          - src/backend/models/purchase.go
+        agent: "deepseek-chat"
+        api: []
+
+    models:
+      purchase.go:
+        content: |-
+          購入情報のモデル
+          - トランザクションID
+          - ユーザーID
+          - プラットフォーム (Apple, Google)
+          - 購入日
+        agent: "deepseek-chat"
+        api: []
+
+  frontend:
+    lib:
+      main.dart:
+        content: |-
+          フロントエンドのエントリーポイント
+          - アプリケーション初期化
+          - ルーティング設定
+          - テーマ設定
+        dependency:
+          - src/frontend/lib/screens/home_screen.dart
+          - src/frontend/lib/screens/auth_screen.dart
+          - src/frontend/lib/screens/purchase_screen.dart
+        agent: "gemini-2.0-flash-exp"
+        api: []
+
+      screens:
+        home_screen.dart:
+          content: |-
+            ホーム画面の実装
+            - 日替わり相性表示
+            - 診断結果表示
+            - コンテンツビューア
+          dependency:
+            - src/frontend/lib/widgets/diagnosis_card.dart
+            - src/frontend/lib/widgets/compatibility_chart.dart
+          agent: "gemini-2.0-flash-exp"
+          api: []
+
+        auth_screen.dart:
+          content: |-
+            認証画面の実装
+            - ユーザー登録
+            - ログイン
+            - 年齢確認
+          dependency:
+            - src/frontend/lib/widgets/auth_form.dart
+          agent: "gemini-2.0-flash-exp"
+          api: []
+        purchase_screen.dart:
+          content: |-
+            課金画面の実装
+            - 購入アイテムの表示
+            - 課金処理の実行
+            - 購入履歴の表示
+          dependency:
+            - src/frontend/lib/services/purchase_service.dart
+          agent: "gemini-2.0-flash-exp"
+          api: []
+
+      widgets:
+        diagnosis_card.dart:
+          content: |-
+            診断結果表示用のカードウィジェット
+            - タイプ名
+            - スコア表示
+            - 詳細ボタン
+          dependency: []
+          agent: "gemini-2.0-flash-exp"
+          api: []
+
+        compatibility_chart.dart:
+          content: |-
+            相性診断結果のチャート表示
+            - 円グラフ
+            - スコア表示
+            - アドバイステキスト
+          dependency: []
+          agent: "gemini-2.0-flash-exp"
+          api: []
+
+        auth_form.dart:
+          content: |-
+            認証フォームの実装
+            - メール入力
+            - パスワード入力
+            - バリデーション
+          dependency: []
+          agent: "gemini-2.0-flash-exp"
+          api: []
+
+      services:
+        purchase_service.dart:
+          content: |-
+            アプリ内課金処理の実装
+            - Apple App Store の課金処理
+            - Google Play Store の課金処理
+            - 課金情報の検証と保存
+          agent: "gemini-2.0-flash-exp"
+          api: []
+
+  database:
+    migrations:
+      20231001_initial_migration.sql:
+        content: |-
+          初期データベースマイグレーション
+          - ユーザーテーブル
+          - 診断質問テーブル
+          - 相性診断結果テーブル
+        dependency: []
+        agent: "deepseek-chat"
+        api: []
+      20231002_purchase_table.sql:
+        content: |-
+          購入情報テーブルの追加
+          - トランザクションID
+          - ユーザーID
+          - プラットフォーム (Apple, Google)
+          - 購入日
+        dependency: []
+        agent: "deepseek-chat"
+        api: []
+
+  tests:
+    backend:
+      auth_test.go:
+        content: |-
+          認証関連のテストケース
+          - ユーザー登録
+          - ログイン
+          - パスワードリセット
+        dependency:
+          - src/backend/api/v1/auth/auth.go
+        agent: "deepseek-chat"
+        api: []
+
+    frontend:
+      home_screen_test.dart:
+        content: |-
+          ホーム画面のテストケース
+          - 診断結果表示
+          - 相性診断表示
+        dependency:
+          - src/frontend/lib/screens/home_screen.dart
+        agent: "gemini-2.0-flash-exp"
+        api: []
+
+  docker:
+    Dockerfile:
+      content: |-
+        バックエンド用Dockerfile
+        - Go環境のセットアップ
+        - 依存関係のインストール
+        - ビルドと実行
+      dependency: []
+      agent: "deepseek-chat"
+      api: []
+
+    docker-compose.yml:
+      content: |-
+        コンンテナオーケストレーション設定
+- バックエンドサービス
+- データベースサービス
+- Redisサービス
+dependency: []
+agent: "deepseek-chat"
+api: []
+
+.env:
+content: |-
+基本的な環境変数設定
+- データベース接続情報
+- APIキー
+- 認証設定
+- Apple App Store 課金検証キー
+- Google Play Store 課金検証キー
+dependency: []
+agent: "deepseek-chat"
+api: []
+
+.env.development:
+content: |-
+開発環境用環境変数
+- ローカルデータベース設定
+- デバッグモード有効化
+dependency: []
+agent: "deepseek-chat"
+api: []
+
+.env.production:
+content: |-
+本番環境用環境変数
+- 本番データベース設定
+- セキュリティ強化設定
+dependency: []
+agent: "deepseek-chat"
+api: []

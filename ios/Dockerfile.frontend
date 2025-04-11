@@ -1,0 +1,46 @@
+# ビルドステージ
+FROM debian:latest AS builder
+
+# 必要なツールのインストール
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    unzip \
+    xz-utils \
+    zip \
+    libglu1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+
+# Flutter SDKのインストール
+RUN git clone https://github.com/flutter/flutter.git /flutter
+ENV PATH="/flutter/bin:${PATH}"
+
+# Flutterの設定
+RUN flutter doctor
+RUN flutter config --no-analytics
+RUN flutter config --enable-web
+
+WORKDIR /app
+
+# 依存関係のコピーとインストール
+COPY ../frontend/pubspec.* ./
+RUN flutter pub get
+
+# ソースコードのコピー
+COPY ../frontend .
+
+# Webビルド
+RUN flutter build web --release
+
+# Nginxステージ
+FROM nginx:alpine
+
+# ビルドしたWebアプリケーションをNginxのドキュメントルートにコピー
+COPY --from=builder /app/build/web /usr/share/nginx/html
+
+# Nginxの設定
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
