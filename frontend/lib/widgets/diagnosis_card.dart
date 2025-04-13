@@ -47,4 +47,4 @@ class DiagnosisCard extends StatelessWidget {
       ),
     );
   }
-};
+}

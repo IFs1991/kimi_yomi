@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -34,6 +35,13 @@ const (
 const (
 	BillingCycleMonthly = "monthly"
 	BillingCycleYearly  = "yearly"
+)
+
+// Common errors for Subscription model
+var (
+	ErrInvalidUserID = errors.New("user ID cannot be empty")
+	ErrInvalidPlanID = errors.New("plan ID cannot be empty")
+	ErrInvalidAmount = errors.New("amount cannot be negative")
 )
 
 // Validate performs validation checks on the subscription

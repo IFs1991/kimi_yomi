@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'user_model.dart';
+// import 'user_model.dart'; // Removed unused import
 
 @immutable
 class Compatibility {

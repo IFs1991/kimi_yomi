@@ -2,8 +2,9 @@ package subscription
 
 import (
 	"context"
+	"kimiyomi/models"
+	"kimiyomi/services"
 	"net/http"
-	"src/backend/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,11 +31,11 @@ type SubscriptionResponse struct {
 
 // Handler struct
 type SubscriptionHandler struct {
-	subscriptionService *services.SubscriptionService
+	subscriptionService services.SubscriptionService
 }
 
 // NewSubscriptionHandler creates a new subscription handler
-func NewSubscriptionHandler(subscriptionService *services.SubscriptionService) *SubscriptionHandler {
+func NewSubscriptionHandler(subscriptionService services.SubscriptionService) *SubscriptionHandler {
 	return &SubscriptionHandler{
 		subscriptionService: subscriptionService,
 	}
@@ -53,19 +54,29 @@ func (h *SubscriptionHandler) CreateSubscription(c *gin.Context) {
 	}
 
 	userID := c.GetString("user_id") // From auth middleware
-	subscription, err := h.subscriptionService.CreateSubscription(userID, req.PlanID, req.BillingCycle)
-	if err != nil {
+
+	// Create models.Subscription object (example - adjust as needed)
+	subscription := &models.Subscription{
+		UserID:       userID,
+		PlanID:       req.PlanID,
+		BillingCycle: req.BillingCycle,
+		// Set other fields like StartDate, AutoRenew based on logic
+	}
+
+	// Pass context and the subscription object
+	if err := h.subscriptionService.CreateSubscription(c.Request.Context(), subscription); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, subscription)
+	c.JSON(http.StatusCreated, subscription) // Return the created subscription
 }
 
 // GetSubscription handles retrieving a subscription
 func (h *SubscriptionHandler) GetSubscription(c *gin.Context) {
 	subscriptionID := c.Param("id")
-	subscription, err := h.subscriptionService.GetSubscription(subscriptionID)
+	// Pass context
+	subscription, err := h.subscriptionService.GetSubscription(c.Request.Context(), subscriptionID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Subscription not found"})
 		return
@@ -77,7 +88,8 @@ func (h *SubscriptionHandler) GetSubscription(c *gin.Context) {
 // CancelSubscription handles subscription cancellation
 func (h *SubscriptionHandler) CancelSubscription(c *gin.Context) {
 	subscriptionID := c.Param("id")
-	err := h.subscriptionService.CancelSubscription(subscriptionID)
+	// Pass context
+	err := h.subscriptionService.CancelSubscription(c.Request.Context(), subscriptionID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -88,26 +100,26 @@ func (h *SubscriptionHandler) CancelSubscription(c *gin.Context) {
 
 // GetUserSubscriptions handles retrieving all subscriptions for a user
 func (h *SubscriptionHandler) GetUserSubscriptions(c *gin.Context) {
-	userID := c.GetString("user_id") // From auth middleware
-	subscriptions, err := h.subscriptionService.GetUserSubscriptions(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, subscriptions)
+	// userID := c.GetString("user_id") // From auth middleware
+	// subscriptions, err := h.subscriptionService.GetUserSubscriptions(userID) // Method does not exist on interface
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, subscriptions)
+	c.JSON(http.StatusNotImplemented, gin.H{"message": "GetUserSubscriptions not implemented"})
 }
 
 // RenewSubscription handles subscription renewal
 func (h *SubscriptionHandler) RenewSubscription(c *gin.Context) {
-	subscriptionID := c.Param("id")
-	err := h.subscriptionService.RenewSubscription(subscriptionID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Subscription renewed successfully"})
+	// subscriptionID := c.Param("id")
+	// err := h.subscriptionService.RenewSubscription(subscriptionID) // Method does not exist on interface
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, gin.H{"message": "Subscription renewed successfully"})
+	c.JSON(http.StatusNotImplemented, gin.H{"message": "RenewSubscription not implemented"})
 }
 
 // RegisterRoutes registers subscription routes

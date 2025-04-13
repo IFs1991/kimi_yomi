@@ -18,22 +18,22 @@ import (
 
 // MockFirebaseAuth is a mock implementation of the Firebase Auth client.
 type MockFirebaseAuth struct {
-	Users          map[string]*auth.UserRecord
-	CreatedUsers   []*auth.UserToCreate
-	CustomTokens   map[string]string // uid -> token
-	DeletedUsers   []string
-	EmailActions   []map[string]interface{}
-    PasswordResetLinks map[string]string
+	Users              map[string]*auth.UserRecord
+	CreatedUsers       []*auth.UserToCreate
+	CustomTokens       map[string]string // uid -> token
+	DeletedUsers       []string
+	EmailActions       []map[string]interface{}
+	PasswordResetLinks map[string]string
 }
 
 func NewMockFirebaseAuth() *MockFirebaseAuth {
 	return &MockFirebaseAuth{
-		Users:        make(map[string]*auth.UserRecord),
-		CreatedUsers: make([]*auth.UserToCreate, 0),
-		CustomTokens: make(map[string]string),
-		DeletedUsers: make([]string, 0),
-		EmailActions: make([]map[string]interface{}, 0),
-        PasswordResetLinks: make(map[string]string),
+		Users:              make(map[string]*auth.UserRecord),
+		CreatedUsers:       make([]*auth.UserToCreate, 0),
+		CustomTokens:       make(map[string]string),
+		DeletedUsers:       make([]string, 0),
+		EmailActions:       make([]map[string]interface{}, 0),
+		PasswordResetLinks: make(map[string]string),
 	}
 }
 
@@ -71,18 +71,18 @@ func (m *MockFirebaseAuth) CustomToken(ctx context.Context, uid string) (string,
 }
 
 func (m *MockFirebaseAuth) SetCustomUserClaims(ctx context.Context, uid string, claims map[string]interface{}) error {
-    user, ok := m.findUserByUID(uid)
-    if !ok {
-        return fmt.Errorf("user not found")
-    }
+	user, ok := m.findUserByUID(uid)
+	if !ok {
+		return fmt.Errorf("user not found")
+	}
 
-    if user.CustomClaims == nil {
-        user.CustomClaims = make(map[string]interface{})
-    }
-    for k, v := range claims {
-        user.CustomClaims[k] = v
-    }
-    return nil
+	if user.CustomClaims == nil {
+		user.CustomClaims = make(map[string]interface{})
+	}
+	for k, v := range claims {
+		user.CustomClaims[k] = v
+	}
+	return nil
 }
 
 func (m *MockFirebaseAuth) VerifyEmail(ctx context.Context, code string) (map[string]interface{}, error) {
@@ -100,10 +100,10 @@ func (m *MockFirebaseAuth) VerifyEmail(ctx context.Context, code string) (map[st
 }
 
 func (m *MockFirebaseAuth) DeleteUser(ctx context.Context, uid string) error {
-    if _, ok := m.findUserByUID(uid); !ok {
-        return fmt.Errorf("user not found")
-    }
-    m.DeletedUsers = append(m.DeletedUsers, uid)
+	if _, ok := m.findUserByUID(uid); !ok {
+		return fmt.Errorf("user not found")
+	}
+	m.DeletedUsers = append(m.DeletedUsers, uid)
 
 	var userKey string
 	for email, userRecord := range m.Users {
@@ -117,33 +117,33 @@ func (m *MockFirebaseAuth) DeleteUser(ctx context.Context, uid string) error {
 		delete(m.Users, userKey) // Remove the user from the map
 	}
 
-    return nil
+	return nil
 }
 
 func (m *MockFirebaseAuth) findUserByUID(uid string) (*auth.UserRecord, bool) {
-    for _, user := range m.Users {
-        if user.UID == uid {
-            return user, true
-        }
-    }
-    return nil, false
+	for _, user := range m.Users {
+		if user.UID == uid {
+			return user, true
+		}
+	}
+	return nil, false
 }
 
-func (m *MockFirebaseAuth) EmailVerificationLink(ctx context.Context, email string)(string, error){
-	m.EmailActions = append(m.EmailActions, map[string]interface{}{"action": "EmailVerificationLink", "email":email})
+func (m *MockFirebaseAuth) EmailVerificationLink(ctx context.Context, email string) (string, error) {
+	m.EmailActions = append(m.EmailActions, map[string]interface{}{"action": "EmailVerificationLink", "email": email})
 	return fmt.Sprintf("verification-link-for-%s", email), nil // Mock link
 }
 
 func (m *MockFirebaseAuth) PasswordResetLink(ctx context.Context, email string) (string, error) {
-    if _, exists := m.Users[email]; !exists {
-        return "", fmt.Errorf("user not found")
-    }
+	if _, exists := m.Users[email]; !exists {
+		return "", fmt.Errorf("user not found")
+	}
 	link := fmt.Sprintf("password-reset-link-for-%s", email)
-    m.PasswordResetLinks[email] = link  // Store the link
-    return link, nil
+	m.PasswordResetLinks[email] = link // Store the link
+	return link, nil
 }
 
-func (m *MockFirebaseAuth) VerifyPasswordResetCode(ctx context.Context, code string) (string, error){
+func (m *MockFirebaseAuth) VerifyPasswordResetCode(ctx context.Context, code string) (string, error) {
 	//Add to EmailActions for Test
 	m.EmailActions = append(m.EmailActions, map[string]interface{}{"action": "VerifyPasswordResetCode", "code": code})
 	return "test@example.com", nil //OK
@@ -277,7 +277,6 @@ func TestAuthAPI(t *testing.T) {
 		// Preregister an *unverified* user
 		_, _ = mockAuth.CreateUser(context.Background(), &auth.UserToCreate{Email: "unverified@example.com", Password: "password123", EmailVerified: false})
 
-
 		credentials := authHandler.LoginRequest{
 			Email:    "unverified@example.com",
 			Password: "password123",
@@ -310,13 +309,13 @@ func TestAuthAPI(t *testing.T) {
 		assert.Contains(t, w.Body.String(), "Password reset email sent")
 
 		// Check if PasswordResetLink was called
-        require.Len(t, mockAuth.PasswordResetLinks, 1)
-        _, exists := mockAuth.PasswordResetLinks["reset@example.com"]
-        assert.True(t, exists, "Password reset link should be generated for the user")
+		require.Len(t, mockAuth.PasswordResetLinks, 1)
+		_, exists := mockAuth.PasswordResetLinks["reset@example.com"]
+		assert.True(t, exists, "Password reset link should be generated for the user")
 
 	})
 
-	t.Run("Test Verify Email - Success", func(t *testing.T){
+	t.Run("Test Verify Email - Success", func(t *testing.T) {
 		// Arrange
 		_, _ = mockAuth.CreateUser(context.Background(), &auth.UserToCreate{Email: "verifyemail@example.com", EmailVerified: false}) // Create unverified User
 		// Create a verification request with a mock oobCode
@@ -335,7 +334,7 @@ func TestAuthAPI(t *testing.T) {
 
 	})
 
-	t.Run("Test Verify Email - Missing Parameters", func(t *testing.T){
+	t.Run("Test Verify Email - Missing Parameters", func(t *testing.T) {
 		//Arrange
 		_, _ = mockAuth.CreateUser(context.Background(), &auth.UserToCreate{Email: "verifyemail@example.com"}) // Create User
 
@@ -352,7 +351,7 @@ func TestAuthAPI(t *testing.T) {
 
 	})
 
-	t.Run("Test Verify Email - Invalid mode", func(t *testing.T){
+	t.Run("Test Verify Email - Invalid mode", func(t *testing.T) {
 		//Arrange
 		_, _ = mockAuth.CreateUser(context.Background(), &auth.UserToCreate{Email: "verifyemail@example.com"}) // Create User
 
@@ -368,7 +367,7 @@ func TestAuthAPI(t *testing.T) {
 		assert.Contains(t, w.Body.String(), "Invalid mode")
 	})
 
-	t.Run("Test Verify Age - Success", func(t *testing.T){
+	t.Run("Test Verify Age - Success", func(t *testing.T) {
 
 		// Arrange: Create a user and simulate authentication (set UID in context)
 		user, err := mockAuth.CreateUser(context.Background(), &auth.UserToCreate{Email: "ageverify@example.com", EmailVerified: true})
@@ -385,7 +384,6 @@ func TestAuthAPI(t *testing.T) {
 		// Set the UID in the context, as the middleware would do
 		ctx := context.WithValue(req.Context(), "uid", user.UID)
 		req = req.WithContext(ctx)
-
 
 		w := httptest.NewRecorder()
 
@@ -406,53 +404,53 @@ func TestAuthAPI(t *testing.T) {
 	})
 
 	t.Run("Test Verify Age - Unauthorized", func(t *testing.T) {
-        verifyAgeRequest := authHandler.VerifyAgeRequest{
-            Age: 20,
-        }
-        jsonValue, _ := json.Marshal(verifyAgeRequest)
-        req, _ := http.NewRequest("POST", "/api/v1/auth/verify-age", bytes.NewBuffer(jsonValue))
-        req.Header.Set("Content-Type", "application/json")
+		verifyAgeRequest := authHandler.VerifyAgeRequest{
+			Age: 20,
+		}
+		jsonValue, _ := json.Marshal(verifyAgeRequest)
+		req, _ := http.NewRequest("POST", "/api/v1/auth/verify-age", bytes.NewBuffer(jsonValue))
+		req.Header.Set("Content-Type", "application/json")
 
-        w := httptest.NewRecorder()
-        router.ServeHTTP(w, req)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
 
-        assert.Equal(t, http.StatusUnauthorized, w.Code) // Expect 401
-    })
+		assert.Equal(t, http.StatusUnauthorized, w.Code) // Expect 401
+	})
 
 	t.Run("Test Verify Age - Bad Request", func(t *testing.T) {
 		user, err := mockAuth.CreateUser(context.Background(), &auth.UserToCreate{Email: "ageverify@example.com", EmailVerified: true})
 		require.NoError(t, err)
 		verifyAgeRequest := authHandler.VerifyAgeRequest{
-            // Age: 20,  //Missing Age
-        }
+			// Age: 20,  //Missing Age
+		}
 		jsonValue, _ := json.Marshal(verifyAgeRequest)
 		req, _ := http.NewRequest("POST", "/api/v1/auth/verify-age", bytes.NewBuffer(jsonValue))
 		req.Header.Set("Content-Type", "application/json")
 		ctx := context.WithValue(req.Context(), "uid", user.UID)
 		req = req.WithContext(ctx)
 
-        w := httptest.NewRecorder()
-        router.ServeHTTP(w, req)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
 
-        assert.Equal(t, http.StatusBadRequest, w.Code) // Expect 401
+		assert.Equal(t, http.StatusBadRequest, w.Code)  // Expect 401
 		assert.Contains(t, w.Body.String(), "required") // Check for validation error
 
-    })
+	})
 
-	t.Run("Test Verify Age - Underage", func(t *testing.T){
+	t.Run("Test Verify Age - Underage", func(t *testing.T) {
 		user, err := mockAuth.CreateUser(context.Background(), &auth.UserToCreate{Email: "ageverify@example.com", EmailVerified: true})
 		require.NoError(t, err)
 		verifyAgeRequest := authHandler.VerifyAgeRequest{
-            Age: 17,
-        }
+			Age: 17,
+		}
 		jsonValue, _ := json.Marshal(verifyAgeRequest)
 		req, _ := http.NewRequest("POST", "/api/v1/auth/verify-age", bytes.NewBuffer(jsonValue))
 		req.Header.Set("Content-Type", "application/json")
 		ctx := context.WithValue(req.Context(), "uid", user.UID)
 		req = req.WithContext(ctx)
 
-        w := httptest.NewRecorder()
-        router.ServeHTTP(w, req)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code) // Expect 400
 		assert.Contains(t, w.Body.String(), "Age must be 18 or older")

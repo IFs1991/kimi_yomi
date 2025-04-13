@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"backend/models"
-	"backend/repository"
+	"kimiyomi/models"
+	"kimiyomi/repository"
 
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/sub"

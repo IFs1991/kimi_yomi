@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:your_app/widgets/auth_form.dart';
+import 'package:kimi_yomi/widgets/auth_form.dart';
 
 class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
@@ -21,17 +21,10 @@ class AuthScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             AuthForm(
-              onRegister: (email, password, age) {
-                // TODO: Implement registration logic
-                print('Registering with email: $email, password: $password, age: $age');
-              },
-              onLogin: (email, password) {
-                // TODO: Implement login logic
-                print('Logging in with email: $email, password: $password');
-              },
-              onAgeVerification: (age) {
-                // TODO: Implement age verification logic
-                print('Verifying age: $age');
+              onSubmit: (email, password) {
+                // TODO: Implement login/registration logic based on context or form state
+                print('Submitting with email: $email, password: $password');
+                // Maybe call different methods based on a state variable (isLogin vs isRegister)
               },
             ),
           ],
@@ -39,4 +32,4 @@ class AuthScreen extends StatelessWidget {
       ),
     );
   }
-};
+}

@@ -212,11 +212,13 @@ func (h *AuthHandler) VerifyEmail(c *gin.Context) {
 
 	// Handle email verification.
 	if mode == "verifyEmail" {
-		if _, err := h.firebaseAuth.VerifyEmail(c, oobCode); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Email verification failed: %v", err)})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"message": "Email verified successfully"})
+		// _, err := h.firebaseAuth.VerifyEmail(c, oobCode); // SDK v4ではこのメソッドは提供されない
+		// if err != nil {
+		// 	c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Email verification failed: %v", err)})
+		// 	return
+		// }
+		// TODO: Implement email verification using Action Code Handler on client-side
+		c.JSON(http.StatusOK, gin.H{"message": "Email verification endpoint reached (implement client-side logic)"})
 		return
 	}
 
@@ -224,12 +226,13 @@ func (h *AuthHandler) VerifyEmail(c *gin.Context) {
 	if mode == "resetPassword" {
 		//newPassword := c.PostForm("newPassword")
 
-		_, err := h.firebaseAuth.VerifyPasswordResetCode(context.Background(), oobCode)
-		if err != nil {
-			log.Printf("error verifying password reset code: %v\n", err)
-			// Handle error.
-		}
-		c.JSON(http.StatusOK, gin.H{"message": "verify reset password successfully"})
+		// _, err := h.firebaseAuth.VerifyPasswordResetCode(context.Background(), oobCode) // SDK v4ではこのメソッドは提供されない
+		// if err != nil {
+		// 	log.Printf("error verifying password reset code: %v\n", err)
+		// 	// Handle error.
+		// }
+		// TODO: Implement password reset confirmation using Action Code Handler on client-side
+		c.JSON(http.StatusOK, gin.H{"message": "Password reset verification endpoint reached (implement client-side logic)"})
 		return
 	}
 

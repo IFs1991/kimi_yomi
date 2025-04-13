@@ -1,8 +1,9 @@
 package services
 
 import (
+	"kimiyomi/models"
+
 	"golang.org/x/crypto/bcrypt"
-	"src/backend/models"
 )
 
 type AuthService struct {
@@ -12,6 +13,7 @@ type AuthService struct {
 type UserRepository interface {
 	CreateUser(user *models.User) error
 	FindUserByEmail(email string) (*models.User, error)
+	FindUserByID(userID uint) (*models.User, error)
 	UpdateUser(user *models.User) error
 }
 

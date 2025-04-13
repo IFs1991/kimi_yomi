@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:your_app/lib/screens/home_screen.dart';
-import 'package:your_app/lib/widgets/diagnosis_card.dart';
-import 'package:your_app/lib/widgets/compatibility_chart.dart';
+import 'package:kimi_yomi/screens/home_screen.dart';
+import 'package:kimi_yomi/widgets/diagnosis_card.dart';
+import 'package:kimi_yomi/widgets/compatibility_chart.dart';
 
 void main() {
   testWidgets('HomeScreen displays diagnosis results and compatibility chart', (WidgetTester tester) async {
@@ -20,4 +20,4 @@ void main() {
     // expect(find.text('Your Diagnosis Result'), findsOneWidget);
     // expect(find.text('Compatibility Chart'), findsOneWidget);
   });
-};
+}

@@ -59,4 +59,4 @@ class CompatibilityChart extends StatelessWidget {
       ),
     );
   }
-};
+}

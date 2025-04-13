@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:your_app/widgets/diagnosis_card.dart';
-import 'package:your_app/widgets/compatibility_chart.dart';
+import 'package:kimi_yomi/widgets/diagnosis_card.dart';
+import 'package:kimi_yomi/widgets/compatibility_chart.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -19,7 +19,11 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-            CompatibilityChart(),
+            CompatibilityChart(
+              score: 75.5,
+              advice: "Keep up the good work!",
+              dataMap: {"Factor A": 5, "Factor B": 3, "Factor C": 2},
+            ),
             SizedBox(height: 20),
             Text(
               'Your Diagnosis Results',
@@ -29,8 +33,8 @@ class HomeScreen extends StatelessWidget {
             DiagnosisCard(
               typeName: 'Type A',
               score: 85,
-              onTap: () {
-                // Handle card tap
+              onDetailsPressed: () {
+                print("Details pressed");
               },
             ),
             SizedBox(height: 20),
@@ -62,4 +66,4 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-};
+}

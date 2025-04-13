@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"your_project/models"
-	"your_project/services"
+	"kimiyomi/models"
+	"kimiyomi/services"
 
 	"github.com/gin-gonic/gin"
 )

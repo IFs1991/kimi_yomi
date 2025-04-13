@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
-	"backend/models"
-	"backend/repository"
+	"kimiyomi/models"
+	"kimiyomi/repository"
 
 	"gorm.io/gorm"
 )

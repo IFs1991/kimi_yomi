@@ -2,8 +2,8 @@ package services
 
 import (
 	"errors"
+	"kimiyomi/models"
 	"time"
-	"your-app/models"
 
 	"gorm.io/gorm"
 )

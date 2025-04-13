@@ -1,19 +1,19 @@
 package content
 
 import (
+	"kimiyomi/models"
+	"kimiyomi/services"
 	"net/http"
-	"src/backend/models"
-	"src/backend/services"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type ContentHandler struct {
-	contentService *services.ContentService
+	contentService services.ContentService
 }
 
-func NewContentHandler(contentService *services.ContentService) *ContentHandler {
+func NewContentHandler(contentService services.ContentService) *ContentHandler {
 	return &ContentHandler{
 		contentService: contentService,
 	}

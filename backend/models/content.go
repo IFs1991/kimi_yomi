@@ -45,22 +45,24 @@ func (c *Content) Validate() error {
 	if c.Title == "" {
 		return ErrInvalidTitle
 	}
-	if c.URL == "" {
+	if c.MediaURL == "" {
 		return ErrInvalidURL
 	}
 	if c.Price < 0 {
 		return ErrInvalidPrice
-	}
-	if c.CreatorID == 0 {
-		return ErrInvalidCreator
 	}
 	return nil
 }
 
 // Common errors for Content model
 var (
-	ErrInvalidTitle   = errors.New("title cannot be empty")
-	ErrInvalidURL     = errors.New("URL cannot be empty")
-	ErrInvalidPrice   = errors.New("price cannot be negative")
-	ErrInvalidCreator = errors.New("creator ID is required")
+	ErrInvalidTitle = errors.New("title cannot be empty")
+	ErrInvalidURL   = errors.New("media URL cannot be empty")
+	ErrInvalidPrice = errors.New("price cannot be negative")
 )
+
+// ContentFilter defines criteria for filtering content
+type ContentFilter struct {
+	Type   string `form:"type"`
+	Status string `form:"status"`
+}

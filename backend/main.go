@@ -5,12 +5,13 @@ import (
 	"log"
 	"net/http"
 	"os"
-	authHandler "src/backend/api/v1/auth" // Import path for your auth package
-	"src/backend/api/v1/compatibility"
-	"src/backend/api/v1/content"
-	"src/backend/api/v1/diagnosis"
-	"src/backend/api/v1/payment"
-	"src/backend/api/v1/subscription"
+
+	authHandler "kimiyomi/api/v1/auth" // モジュール名からのパス
+	"kimiyomi/api/v1/compatibility"    // モジュール名からのパス
+	"kimiyomi/api/v1/content"          // モジュール名からのパス
+	"kimiyomi/api/v1/diagnosis"        // モジュール名からのパス
+	"kimiyomi/api/v1/payment"          // モジュール名からのパス
+	"kimiyomi/api/v1/subscription"     // モジュール名からのパス
 
 	"github.com/gin-gonic/gin"
 )

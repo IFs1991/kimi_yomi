@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import '../models/compatibility_model.dart';
-import '../models/user_model.dart';
 import '../services/api_service.dart';
 
 class CompatibilityProvider with ChangeNotifier {

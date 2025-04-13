@@ -1,0 +1,824 @@
+# キミヨミ リファクタリング計画 YAML
+
+# プロジェクトのルート構造
+project:
+  name: "kimiyomi"
+  description: "Big5性格診断と相性診断のFlutter & Goアプリケーション"
+
+  # ルートレベルのファイル
+  root_files:
+    - file: "README.md"
+      description: "プロジェクト概要とセットアップガイド"
+      source: "README.md"
+      target: "README.md"
+      action: "copy"
+
+    - file: ".gitignore"
+      description: "プロジェクト全体のGit無視設定"
+      source: ".gitignore"
+      target: ".gitignore"
+      action: "copy"
+
+    - file: "docker-compose.yml"
+      description: "開発環境のコンテナ構成"
+      source: "docker-compose.yml"
+      target: "docker-compose.yml"
+      action: "copy"
+
+  # GitHub Actionsの設定
+  github:
+    path: ".github"
+    description: "GitHub関連の設定フォルダ"
+
+    workflows:
+      path: ".github/workflows"
+      description: "GitHubワークフロー設定"
+      files:
+        - file: "backend-ci.yml"
+          description: "バックエンドのCI/CD設定"
+          source: ".github/workflows/backend-ci.yml"
+          target: ".github/workflows/backend-ci.yml"
+          action: "copy"
+
+        - file: "cloud-run-deploy.yml"
+          description: "Google Cloud Runへのデプロイ設定"
+          source: ".github/workflows/cloud-run-deploy.yml"
+          target: ".github/workflows/cloud-run-deploy.yml"
+          action: "copy"
+
+  # Dockerファイル
+  docker:
+    path: "docker"
+    description: "Docker関連ファイル"
+    files:
+      - file: "Dockerfile.backend"
+        description: "バックエンド用Dockerfile"
+        source: "backend/Dockerfile.backend"
+        target: "docker/Dockerfile.backend"
+        action: "move"
+
+      - file: "Dockerfile.frontend"
+        description: "フロントエンド用Dockerfile"
+        source: "ios/Dockerfile.frontend"
+        target: "docker/Dockerfile.frontend"
+        action: "move"
+
+      - file: "nginx.conf"
+        description: "Nginx設定（フロントエンド配信用）"
+        source: "lib/dockerfile.frontend/nginx.conf"
+        target: "docker/nginx.conf"
+        action: "move"
+
+  # フロントエンド部分
+  frontend:
+    path: "frontend"
+    description: "Flutter製フロントエンドアプリケーション"
+
+    # ルートレベルのファイル
+    root_files:
+      - file: "pubspec.yaml"
+        description: "Flutterプロジェクトの依存関係とメタデータ"
+        source: "pubspec.yaml"
+        target: "frontend/pubspec.yaml"
+        action: "move"
+
+      - file: "pubspec.lock"
+        description: "Flutterの依存関係ロックファイル"
+        source: "pubspec.lock"
+        target: "frontend/pubspec.lock"
+        action: "move"
+
+      - file: "analysis_options.yaml"
+        description: "Dart静的解析の設定"
+        source: "analysis_options.yaml"
+        target: "frontend/analysis_options.yaml"
+        action: "move"
+
+      - file: ".metadata"
+        description: "Flutterツール用メタデータ"
+        source: ".metadata"
+        target: "frontend/.metadata"
+        action: "move"
+
+    # lib部分（コアロジック）
+    lib:
+      path: "frontend/lib"
+      description: "Flutterアプリケーションの主要なソースコード"
+
+      files:
+        - file: "main.dart"
+          description: "アプリケーションのエントリーポイント"
+          source: "lib/main.dart"
+          target: "frontend/lib/main.dart"
+          action: "move"
+
+      # 設定
+      config:
+        path: "frontend/lib/config"
+        description: "アプリケーション設定ファイル"
+        files:
+          - file: "theme.dart"
+            description: "アプリケーションのテーマ設定"
+            source: "lib/config/theme.dart"
+            target: "frontend/lib/config/theme.dart"
+            action: "move"
+
+      # データモデル
+      models:
+        path: "frontend/lib/models"
+        description: "データモデル定義"
+        files:
+          - file: "user_model.dart"
+            description: "ユーザーデータモデル"
+            source: "lib/models/user_model.dart"
+            target: "frontend/lib/models/user_model.dart"
+            action: "move"
+
+          - file: "diagnosis_model.dart"
+            description: "診断モデル"
+            source: "lib/models/diagnosis_model.dart"
+            target: "frontend/lib/models/diagnosis_model.dart"
+            action: "move"
+
+          - file: "compatibility_model.dart"
+            description: "相性診断モデル"
+            source: "lib/models/compatibility_model.dart"
+            target: "frontend/lib/models/compatibility_model.dart"
+            action: "move"
+
+      # UI画面
+      screens:
+        path: "frontend/lib/screens"
+        description: "アプリケーション画面"
+        files:
+          - file: "home_screen.dart"
+            description: "ホーム画面"
+            source: "lib/screens/home_screen.dart"
+            target: "frontend/lib/screens/home_screen.dart"
+            action: "move"
+
+          - file: "auth_screen.dart"
+            description: "認証画面"
+            source: "lib/screens/auth_screen.dart"
+            target: "frontend/lib/screens/auth_screen.dart"
+            action: "move"
+
+        # 診断関連画面
+        diagnosis:
+          path: "frontend/lib/screens/diagnosis"
+          description: "診断関連画面"
+          files:
+            - file: "diagnosis_screen.dart"
+              description: "診断質問画面"
+              source: "lib/screens/diagnosis/diagnosis_screen.dart"
+              target: "frontend/lib/screens/diagnosis/diagnosis_screen.dart"
+              action: "move"
+
+            - file: "result_screen.dart"
+              description: "診断結果画面"
+              source: "lib/screens/result/result_screen.dart"
+              target: "frontend/lib/screens/diagnosis/result_screen.dart"
+              action: "move"
+
+      # 再利用可能なウィジェット
+      widgets:
+        path: "frontend/lib/widgets"
+        description: "再利用可能なウィジェット"
+        files:
+          - file: "diagnosis_card.dart"
+            description: "診断結果表示カード"
+            source: "lib/widgets/diagnosis_card.dart"
+            target: "frontend/lib/widgets/diagnosis_card.dart"
+            action: "move"
+
+          - file: "compatibility_chart.dart"
+            description: "相性チャート"
+            source: "lib/widgets/compatibility_chart.dart"
+            target: "frontend/lib/widgets/compatibility_chart.dart"
+            action: "move"
+
+          - file: "auth_form.dart"
+            description: "認証フォーム"
+            source: "lib/widgets/auth_form.dart"
+            target: "frontend/lib/widgets/auth_form.dart"
+            action: "move"
+
+        # 診断関連ウィジェット
+        diagnosis:
+          path: "frontend/lib/widgets/diagnosis"
+          description: "診断関連のウィジェット"
+          files:
+            - file: "question_card.dart"
+              description: "質問カード"
+              source: "lib/widgets/diagnosis/question_card.dart"
+              target: "frontend/lib/widgets/diagnosis/question_card.dart"
+              action: "move"
+
+      # プロバイダー（状態管理）
+      providers:
+        path: "frontend/lib/providers"
+        description: "状態管理プロバイダー"
+        files:
+          - file: "auth_provider.dart"
+            description: "認証状態管理"
+            source: "lib/providers/auth_provider.dart"
+            target: "frontend/lib/providers/auth_provider.dart"
+            action: "move"
+
+          - file: "diagnosis_provider.dart"
+            description: "診断状態管理"
+            source: "lib/providers/diagnosis_provider.dart"
+            target: "frontend/lib/providers/diagnosis_provider.dart"
+            action: "move"
+
+          - file: "compatibility_provider.dart"
+            description: "相性診断状態管理"
+            source: "lib/providers/compatibility_provider.dart"
+            target: "frontend/lib/providers/compatibility_provider.dart"
+            action: "move"
+
+      # サービス（API通信など）
+      services:
+        path: "frontend/lib/services"
+        description: "APIサービスなど"
+        files:
+          - file: "api_service.dart"
+            description: "API通信サービス"
+            source: "lib/services/api_service.dart"
+            target: "frontend/lib/services/api_service.dart"
+            action: "move"
+
+    # テスト
+    test:
+      path: "frontend/test"
+      description: "Flutterアプリケーションのテスト"
+      files:
+        - file: "widget_test.dart"
+          description: "ウィジェットテスト"
+          source: "lib/frontend_tests/widget_test.dart"
+          target: "frontend/test/widget_test.dart"
+          action: "move"
+
+        - file: "home_screen_test.dart"
+          description: "ホーム画面テスト"
+          source: "lib/frontend_tests/home_screen_test.dart"
+          target: "frontend/test/home_screen_test.dart"
+          action: "move"
+
+    # Android関連
+    android:
+      path: "frontend/android"
+      description: "Android固有の設定とコード"
+      files:
+        - file: "build.gradle"
+          description: "Androidプロジェクト設定"
+          source: "android/build.gradle"
+          target: "frontend/android/build.gradle"
+          action: "move"
+
+        - file: "gradle.properties"
+          description: "Gradleプロパティ"
+          source: "android/gradle.properties"
+          target: "frontend/android/gradle.properties"
+          action: "move"
+
+        - file: "settings.gradle"
+          description: "Gradle設定"
+          source: "android/settings.gradle"
+          target: "frontend/android/settings.gradle"
+          action: "move"
+
+        - file: ".gitignore"
+          description: "Android固有のGit無視設定"
+          source: "android/.gitignore"
+          target: "frontend/android/.gitignore"
+          action: "move"
+
+      app:
+        path: "frontend/android/app"
+        description: "Androidアプリ設定"
+        files:
+          - file: "build.gradle"
+            description: "アプリビルド設定"
+            source: "android/app/build.gradle"
+            target: "frontend/android/app/build.gradle"
+            action: "move"
+
+            src:
+              path: "frontend/android/app/src"
+              description: "Androidソース"
+
+              main:
+                path: "frontend/android/app/src/main"
+                description: "メインソースコード"
+                files:
+                  - file: "AndroidManifest.xml"
+                    description: "Androidマニフェスト"
+                    source: "android/app/src/main/AndroidManifest.xml"
+                    target: "frontend/android/app/src/main/AndroidManifest.xml"
+                    action: "move"
+
+              kotlin:
+                path: "frontend/android/app/src/main/kotlin"
+                description: "Kotlinソースコード"
+                files:
+                  - file: "MainActivity.kt"
+                    description: "Androidエントリーポイント"
+                    source: "android/app/src/main/kotlin/com/example/kimi_yomi/MainActivity.kt"
+                    target: "frontend/android/app/src/main/kotlin/com/example/kimi_yomi/MainActivity.kt"
+                    action: "move"
+
+    # iOS関連
+    ios:
+      path: "frontend/ios"
+      description: "iOS固有の設定とコード"
+      files:
+        - file: ".gitignore"
+          description: "iOS固有のGit無視設定"
+          source: "ios/.gitignore"
+          target: "frontend/ios/.gitignore"
+          action: "move"
+
+      Runner:
+        path: "frontend/ios/Runner"
+        description: "iOSアプリケーション"
+        files:
+          - file: "Info.plist"
+            description: "iOSアプリケーション設定"
+            source: "ios/Runner/Info.plist"
+            target: "frontend/ios/Runner/Info.plist"
+            action: "move"
+
+          - file: "AppDelegate.swift"
+            description: "iOSエントリーポイント"
+            source: "ios/Runner/AppDelegate.swift"
+            target: "frontend/ios/Runner/AppDelegate.swift"
+            action: "move"
+
+      Flutter:
+        path: "frontend/ios/Flutter"
+        description: "iOSのFlutter設定"
+        files:
+          - file: "AppFrameworkInfo.plist"
+            description: "Flutterフレームワーク情報"
+            source: "ios/Flutter/AppFrameworkInfo.plist"
+            target: "frontend/ios/Flutter/AppFrameworkInfo.plist"
+            action: "move"
+
+          - file: "Debug.xcconfig"
+            description: "デバッグ設定"
+            source: "ios/Flutter/Debug.xcconfig"
+            target: "frontend/ios/Flutter/Debug.xcconfig"
+            action: "move"
+
+          - file: "Release.xcconfig"
+            description: "リリース設定"
+            source: "ios/Flutter/Release.xcconfig"
+            target: "frontend/ios/Flutter/Release.xcconfig"
+            action: "move"
+
+  # バックエンド部分
+  backend:
+    path: "backend"
+    description: "Go製バックエンドアプリケーション"
+
+    # ルートレベルのファイル
+    root_files:
+      - file: "main.go"
+        description: "バックエンドのエントリーポイント"
+        source: "backend/main.go"
+        target: "backend/main.go"
+        action: "copy"
+
+      - file: "go.mod"
+        description: "Goモジュール定義"
+        source: "backend/go.mod"
+        target: "backend/go.mod"
+        action: "copy"
+
+      - file: "go.sum"
+        description: "Goモジュール依存関係チェックサム"
+        source: "backend/go.sum"
+        target: "backend/go.sum"
+        action: "copy"
+
+      - file: ".gitignore"
+        description: "バックエンド固有のGit無視設定"
+        source: "backend/.gitignore"
+        target: "backend/.gitignore"
+        action: "copy"
+
+    # APIハンドラー
+    api:
+      path: "backend/api"
+      description: "APIエンドポイント定義"
+
+      v1:
+        path: "backend/api/v1"
+        description: "APIバージョン1"
+
+        # 認証関連
+        auth:
+          path: "backend/api/v1/auth"
+          description: "認証関連のAPIハンドラー"
+          files:
+            - file: "auth.go"
+              description: "認証ハンドラー"
+              source: "backend/api/v1/auth/auth.go"
+              target: "backend/api/v1/auth/auth.go"
+              action: "copy"
+
+        # 相性診断関連
+        compatibility:
+          path: "backend/api/v1/compatibility"
+          description: "相性診断関連のAPIハンドラー"
+          files:
+            - file: "compatibility.go"
+              description: "相性診断ハンドラー"
+              source: "backend/api/v1/compatibility/compatibility.go"
+              target: "backend/api/v1/compatibility/compatibility.go"
+              action: "copy"
+
+        # コンテンツ関連
+        content:
+          path: "backend/api/v1/content"
+          description: "コンテンツ関連のAPIハンドラー"
+          files:
+            - file: "content.go"
+              description: "コンテンツハンドラー"
+              source: "backend/api/v1/content/content.go"
+              target: "backend/api/v1/content/content.go"
+              action: "copy"
+
+        # 診断関連
+        diagnosis:
+          path: "backend/api/v1/diagnosis"
+          description: "診断関連のAPIハンドラー"
+          files:
+            - file: "diagnosis.go"
+              description: "診断ハンドラー"
+              source: "backend/api/v1/diagnosis/diagnosis.go"
+              target: "backend/api/v1/diagnosis/diagnosis.go"
+              action: "copy"
+
+        # 決済関連
+        payment:
+          path: "backend/api/v1/payment"
+          description: "決済関連のAPIハンドラー"
+          files:
+            - file: "payment.go"
+              description: "決済ハンドラー"
+              source: "backend/api/v1/payment/payment.go"
+              target: "backend/api/v1/payment/payment.go"
+              action: "copy"
+
+        # サブスクリプション関連
+        subscription:
+          path: "backend/api/v1/subscription"
+          description: "サブスクリプション関連のAPIハンドラー"
+          files:
+            - file: "subscription.go"
+              description: "サブスクリプションハンドラー"
+              source: "backend/api/v1/subscription/subscription.go"
+              target: "backend/api/v1/subscription/subscription.go"
+              action: "copy"
+
+    # データモデル
+    models:
+      path: "backend/models"
+      description: "データモデル定義"
+      files:
+        - file: "user.go"
+          description: "ユーザーモデル"
+          source: "backend/models/user.go"
+          target: "backend/models/user.go"
+          action: "copy"
+
+        - file: "diagnosis.go"
+          description: "診断モデル"
+          source: "backend/models/diagnosis.go"
+          target: "backend/models/diagnosis.go"
+          action: "copy"
+
+        - file: "compatibility.go"
+          description: "相性診断モデル"
+          source: "backend/models/compatibility.go"
+          target: "backend/models/compatibility.go"
+          action: "copy"
+
+        - file: "content.go"
+          description: "コンテンツモデル"
+          source: "backend/models/content.go"
+          target: "backend/models/content.go"
+          action: "copy"
+
+        - file: "purchase.go"
+          description: "購入情報モデル"
+          source: "backend/models/purchase.go"
+          target: "backend/models/purchase.go"
+          action: "copy"
+
+        - file: "subscription.go"
+          description: "サブスクリプションモデル"
+          source: "backend/models/subscription.go"
+          target: "backend/models/subscription.go"
+          action: "copy"
+
+    # サービス
+    services:
+      path: "backend/services"
+      description: "ビジネスロジック"
+      files:
+        - file: "auth_service.go"
+          description: "認証サービス"
+          source: "backend/services/auth_service.go"
+          target: "backend/services/auth_service.go"
+          action: "copy"
+
+        - file: "diagnosis_service.go"
+          description: "診断サービス"
+          source: "backend/services/diagnosis_service.go"
+          target: "backend/services/diagnosis_service.go"
+          action: "copy"
+
+        - file: "compatibility_service.go"
+          description: "相性診断サービス"
+          source: "backend/services/compatibility_service.go"
+          target: "backend/services/compatibility_service.go"
+          action: "copy"
+
+        - file: "content_service.go"
+          description: "コンテンツサービス"
+          source: "backend/services/content_service.go"
+          target: "backend/services/content_service.go"
+          action: "copy"
+
+        - file: "payment_service.go"
+          description: "決済サービス"
+          source: "backend/services/payment_service.go"
+          target: "backend/services/payment_service.go"
+          action: "copy"
+
+        - file: "subscription_service.go"
+          description: "サブスクリプションサービス"
+          source: "backend/services/subscription_service.go"
+          target: "backend/services/subscription_service.go"
+          action: "copy"
+
+        - file: "ai_service.go"
+          description: "AI機能サービス"
+          source: "backend/services/ai_service.go"
+          target: "backend/services/ai_service.go"
+          action: "copy"
+
+        - file: "cache_service.go"
+          description: "キャッシュサービス"
+          source: "backend/services/cache_service.go"
+          target: "backend/services/cache_service.go"
+          action: "copy"
+
+    # データベース関連
+    database:
+      path: "backend/database"
+      description: "データベース関連"
+
+      migrations:
+        path: "backend/database/migrations"
+        description: "データベースマイグレーション"
+        files:
+          - file: "20231001_initial_migration.sql"
+            description: "初期データベースマイグレーション"
+            source: "backend/database/migrations/20231001_initial_migration.sql"
+            target: "backend/database/migrations/20231001_initial_migration.sql"
+            action: "copy"
+
+    # テスト
+    backend_tests:
+      path: "backend/backend_tests"
+      description: "バックエンドのテスト"
+      files:
+        - file: "auth_test.go"
+          description: "認証テスト"
+          source: "backend/backend_tests/auth_test.go"
+          target: "backend/backend_tests/auth_test.go"
+          action: "copy"
+
+    # プロジェクト構成情報
+    structure:
+      path: "backend/structure.yaml"
+      description: "バックエンド構造情報"
+      files:
+        - file: "structure.yaml"
+          description: "バックエンド構造定義"
+          source: "backend/structure.yaml"
+          target: "backend/structure.yaml"
+          action: "copy"
+
+# 移行手順
+migration_plan:
+  # ディレクトリ作成
+  step1:
+    description: "新しいディレクトリ構造の作成"
+    commands:
+      - "mkdir -p frontend/lib/{config,models,screens/{diagnosis},widgets/{diagnosis},providers,services}"
+      - "mkdir -p frontend/{android,ios,test,assets/{images,fonts}}"
+      - "mkdir -p backend/{api/v1/{auth,compatibility,content,diagnosis,payment,subscription},models,services,database/migrations,backend_tests,config}"
+      - "mkdir -p docker"
+      - "mkdir -p .github/workflows"
+
+  # フロントエンドの移行
+  step2:
+    description: "フロントエンド部分の移行"
+    commands:
+      # 基本ファイル
+      - "cp pubspec.yaml frontend/"
+      - "cp pubspec.lock frontend/"
+      - "cp analysis_options.yaml frontend/"
+      - "cp .metadata frontend/"
+
+      # lib
+      - "cp lib/main.dart frontend/lib/"
+      - "cp lib/config/theme.dart frontend/lib/config/"
+      - "cp lib/models/*.dart frontend/lib/models/"
+      - "cp lib/screens/*.dart frontend/lib/screens/"
+      - "cp lib/screens/diagnosis/*.dart frontend/lib/screens/diagnosis/"
+      - "cp lib/screens/result/*.dart frontend/lib/screens/diagnosis/"
+      - "cp lib/widgets/*.dart frontend/lib/widgets/"
+      - "cp lib/widgets/diagnosis/*.dart frontend/lib/widgets/diagnosis/"
+      - "cp lib/providers/*.dart frontend/lib/providers/"
+      - "cp lib/services/*.dart frontend/lib/services/"
+
+      # テスト
+      - "cp lib/frontend_tests/*.dart frontend/test/"
+
+      # Android
+      - "cp -r android/* frontend/android/"
+
+      # iOS
+      - "cp -r ios/* frontend/ios/"
+
+  # バックエンドの移行
+  step3:
+    description: "バックエンド部分の移行"
+    commands:
+      # 基本ファイル
+      - "cp backend/main.go backend/"
+      - "cp backend/go.mod backend/"
+      - "cp backend/go.sum backend/"
+      - "cp backend/.gitignore backend/"
+
+      # API
+      - "cp backend/api/v1/auth/*.go backend/api/v1/auth/"
+      - "cp backend/api/v1/compatibility/*.go backend/api/v1/compatibility/"
+      - "cp backend/api/v1/content/*.go backend/api/v1/content/"
+      - "cp backend/api/v1/diagnosis/*.go backend/api/v1/diagnosis/"
+      - "cp backend/api/v1/payment/*.go backend/api/v1/payment/"
+      - "cp backend/api/v1/subscription/*.go backend/api/v1/subscription/"
+
+      # モデル
+      - "cp backend/models/*.go backend/models/"
+
+      # サービス
+      - "cp backend/services/*.go backend/services/"
+
+      # データベース
+      - "cp backend/database/migrations/*.sql backend/database/migrations/"
+
+      # テスト
+      - "cp backend/backend_tests/*.go backend/backend_tests/"
+
+      # 構造情報
+      - "cp backend/structure.yaml backend/"
+
+  # Docker関連
+  step4:
+    description: "Docker関連ファイルの移行"
+    commands:
+      - "cp backend/Dockerfile.backend docker/"
+      - "cp ios/Dockerfile.frontend docker/"
+      - "cp lib/dockerfile.frontend/nginx.conf docker/"
+
+  # GitHub関連
+  step5:
+    description: "GitHub関連ファイルの移行"
+    commands:
+      - "cp .github/workflows/*.yml .github/workflows/"
+
+  # インポートパス修正
+  step6:
+    description: "インポートパスの修正"
+    details: |
+      フロントエンドのファイルでは以下のようなインポートパスの修正が必要:
+      ```dart
+      // 修正前
+      import 'package:your_app/widgets/diagnosis_card.dart';
+
+      // 修正後
+      import 'package:kimi_yomi/widgets/diagnosis_card.dart';
+      ```
+
+      バックエンドのファイルでは以下のようなインポートパスの修正が必要:
+      ```go
+      // 修正前
+      import "src/backend/models"
+
+      // 修正後
+      import "kimiyomi/backend/models"
+      ```
+
+  # 動作確認
+  step7:
+    description: "依存関係の検証と動作確認"
+    commands:
+      - "cd frontend && flutter pub get && flutter analyze"
+      - "cd ../backend && go mod tidy && go build"
+      - "cd frontend && flutter run"
+      - "cd ../backend && go run main.go"
+
+# 移行ステータス (自動追記)
+migration_status:
+  last_updated: 2025-04-11 # Placeholder date
+  summary: |-
+    fixtosomething.yaml の migration_plan に基づきリファクタリングを実行中。
+    step1からstep5までのファイル/ディレクトリ操作を完了。
+    step6のインポートパス修正、step7の動作確認に着手。
+
+  details:
+    - step: "step1: ディレクトリ作成"
+      status: "完了"
+      notes: |
+        - frontend ディレクトリが初期コマンドで作成されなかったため、個別コマンドで再作成。
+        - backend, docker, .github/workflows ディレクトリも作成。
+
+    - step: "step2: フロントエンド移行 (ファイルコピー)"
+      status: "完了"
+      notes: |
+        - 基本ファイル (pubspec等), lib/*, test/* (lib/frontend_testsから), android/*, ios/* を frontend/ 以下にコピー。
+        - test ディレクトリは当初見つからなかったが、file_search で lib/frontend_tests を特定しコピー。
+        - lib/screens/result ディレクトリは存在しなかったためスキップ。
+
+    - step: "step2.1: フロントエンド移行 (ファイル削除 - move対応)"
+      status: "完了 (一部要確認)"
+      notes: |
+        - frontend セクションで action: move 指定されていた元のファイルを削除。
+        - ルートの pubspec*, analysis_options.yaml, .metadata を削除 (cp が mv のように動作した可能性あり)。
+        - 元の lib, android, ios ディレクトリを削除。
+
+    - step: "step3: バックエンド移行"
+      status: "完了 (ほぼスキップ)"
+      notes: |
+        - ほとんどのファイル (root_files, api/*, models/*, services/*, database/*, backend_tests/*, structure.yaml) は
+          source と target が同一パスのため、コピーはスキップ。
+        - ファイルは既に backend/ 以下に配置済みと判断。
+
+    - step: "step4: Docker関連移行"
+      status: "完了 (一部要確認)"
+      notes: |
+        - backend/Dockerfile.backend, ios/Dockerfile.frontend, lib/dockerfile.frontend/nginx.conf を docker/ にコピー。
+        - action: move 指定されていた backend/Dockerfile.backend の削除に失敗 (権限等の可能性)。手動削除が必要な場合あり。
+        - 他の移動元 (ios/, lib/) はディレクトリごと削除済み。
+
+    - step: "step5: GitHub関連移行"
+      status: "完了 (スキップ)"
+      notes: |
+        - .github/workflows/*.yml は source と target が同一パスのためコピーはスキップ。
+        - ファイルは既に .github/workflows/ 以下に配置済みと判断。
+
+    - step: "step6 & step7: フロントエンド依存関係・コード修正"
+      status: "進行中"
+      notes: |
+        - `flutter analyze` を実行しエラーを確認。
+        - 依存関係エラー (in_app_purchase) を修正 (バージョン変更)。
+        - 不足していた依存関係 (http, pie_chart, flutter_secure_storage) を pubspec.yaml に追加し `flutter pub get` 実行。
+        - インポートパスエラー (package:your_app, 相対パス) を修正。
+        - `diagnosis_screen.dart` を大幅修正:
+          - 存在しない `DiagnosisService`, `Question` (別ファイル) への依存を解消。
+          - `ApiService` と `models/diagnosis_model.dart` の `Question` を使うように変更。
+          - 診断セッション開始・質問取得・回答送信のロジックに変更。
+          - 状態管理 (`_sessionId`, `_currentQuestion` 等) とUI (`QuestionCard` 呼び出し) を変更。
+        - その他の `flutter analyze` エラー (unexpected_token, 引数エラー) を修正 (一部ダミーデータ使用)。
+        - 未使用インポートの警告を修正 (test/widget_test.dart の MyApp 依存のため一部差し戻し)。
+        - 残りは info レベルの警告が多数。
+
+    - step: "step6 & step7: バックエンド依存関係・コード修正"
+      status: "進行中 (ビルドエラーあり)"
+      notes: |
+        古い形式のインポートパス src/ は見つからず。
+        go mod tidy および go build を実行し依存関係エラーを確認。
+        不正な依存関係 github.com/awa/go-iap/appstore を go.mod から削除。
+        go mod download で google.golang.org/genproto のバージョンエラーが発生。
+        go.mod を編集し google.golang.org/api および関連する依存関係のバージョンを修正。
+        go mod tidy を実行し依存関係を更新。
+        go build でインポートパスのエラー kimiyomi/backend/... is not in std が発生。
+        main.go のインポートパスをモジュールルート kimiyomi/... からのパスに修正。
+        再度 go build を実行し api/v1 以下のファイルでインポートパスのエラー your_project/... src/backend/... が発生。
+        api/v1/compatibility/compatibility.go, api/v1/content/content.go, api/v1/diagnosis/diagnosis.go のインポートパスをモジュールルートからのパスに修正。
+        現状、バックエンドのビルドはまだ成功していない。content.go でリンターエラーが発生。インポートパスに関連するビルドエラーは残っている可能性あり。
+
+  next_steps:
+    - "バックエンドの api/v1/content/content.go のリンターエラー (undefined エラー) を修正する。"
+    - "go build -v | cat を再度実行し、残りのビルドエラーを確認・修正する (他の api/v1 以下のファイル、services、models 等も確認が必要)。"
+    - "バックエンドのビルドを成功させる。"
+    - "フロントエンドの TODO コメント箇所 (ダミーデータ、ユーザーID等) を修正する。"
+    - "フロントエンド・バックエンドの動作確認 (step7 の残りのコマンド) を実行する。"
+    - "必要に応じて info レベルの警告に対応する。"

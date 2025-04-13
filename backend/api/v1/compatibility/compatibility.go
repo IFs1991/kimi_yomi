@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"your_project/services"
+	"kimiyomi/services"
 
 	"github.com/gin-gonic/gin"
 )
