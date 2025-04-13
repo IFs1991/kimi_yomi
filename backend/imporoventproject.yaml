@@ -1,0 +1,411 @@
+# キミヨミアプリケーション リファクタリング計画
+project:
+  name: "キミヨミ バックエンドリファクタリング"
+  description: "Big5性格診断と相性診断アプリケーションのバックエンド改善計画"
+  start_date: "2025-04-14"
+  end_date: "2025-07-12"
+  stakeholders:
+    - role: "プロジェクトマネージャー"
+      responsibilities: ["計画監視", "リソース管理", "進捗報告"]
+    - role: "バックエンド開発リード"
+      responsibilities: ["技術設計承認", "コードレビュー", "アーキテクチャ決定"]
+    - role: "開発者"
+      responsibilities: ["コード実装", "テスト作成", "ドキュメント更新"]
+
+overview:
+  goals:
+    - "プロジェクト構造の標準化とインポートパスの統一"
+    - "コードの重複排除とアーキテクチャの一貫性確保"
+    - "テストカバレッジの向上と品質保証体制の強化"
+  success_metrics:
+    - metric: "ビルドエラーの解消"
+      target: "ゼロビルドエラー"
+    - metric: "コードの重複率"
+      target: "5%未満（現状15-20%から低減）"
+    - metric: "テストカバレッジ"
+      target: "80%以上（現状40%から向上）"
+    - metric: "バグ発生率"
+      target: "25%減少"
+
+phases:
+  - id: "phase1"
+    name: "基盤の安定化"
+    duration: "2週間"
+    start_date: "2025-04-14"
+    end_date: "2025-04-26"
+    description: "インポートパスの統一と重複コードの解消による基盤安定化"
+    tasks:
+      - id: "task1.1"
+        name: "インポートパスの統一"
+        duration: "3日間"
+        description: "すべてのインポートパスをkimiyomi形式に統一"
+        subtasks:
+          - "全ファイルの依存関係調査"
+          - "インポートパス一覧の作成"
+          - "パス修正とビルド検証"
+        deliverables:
+          - "修正済みコードベース"
+          - "依存関係マップ"
+        priority: "高"
+
+      - id: "task1.2"
+        name: "ディレクトリ構造の整理"
+        duration: "2日間"
+        description: "fixtosomething.yamlに基づくディレクトリ構造の整理"
+        dependencies: ["task1.1"]
+        subtasks:
+          - "fixtosomething.yamlの最新状態確認"
+          - "ファイル配置の最適化"
+          - "Docker関連ファイルの移動"
+        deliverables:
+          - "整理されたプロジェクト構造"
+        priority: "高"
+
+      - id: "task1.3"
+        name: "重複コードの解消"
+        duration: "5日間"
+        description: "サービスレイヤーの重複メソッドを統合"
+        subtasks:
+          - "subscription_service.goの重複メソッド統合"
+          - "content_service.goの重複メソッド修正"
+          - "その他重複コードの特定と修正"
+        deliverables:
+          - "重複のないサービスレイヤー"
+          - "コードレビュー文書"
+        priority: "高"
+
+      - id: "task1.4"
+        name: "インターフェースと実装の整合性確保"
+        duration: "2日間"
+        description: "インターフェース定義と実装の整合性を確保"
+        dependencies: ["task1.3"]
+        subtasks:
+          - "インターフェース定義の検証"
+          - "実装との不一致修正"
+          - "結合テスト実施"
+        deliverables:
+          - "整合性のあるインターフェース定義"
+        priority: "中"
+
+      - id: "task1.5"
+        name: "フェーズ1検証"
+        duration: "2日間"
+        description: "基盤安定化の成果を検証"
+        dependencies: ["task1.1", "task1.2", "task1.3", "task1.4"]
+        subtasks:
+          - "ビルドテスト"
+          - "基本機能テスト"
+          - "コード品質メトリクス測定"
+        deliverables:
+          - "フェーズ1検証レポート"
+        priority: "高"
+
+  - id: "phase2"
+    name: "アーキテクチャの改善"
+    duration: "3週間"
+    start_date: "2025-04-28"
+    end_date: "2025-05-17"
+    description: "アーキテクチャパターンの一貫した適用と認証システムの改善"
+    tasks:
+      - id: "task2.1"
+        name: "リポジトリパターンの完全適用"
+        duration: "8日間"
+        description: "すべてのデータアクセスをリポジトリ層に移動"
+        subtasks:
+          - "compatibility_serviceのリポジトリ実装"
+          - "diagnosis_serviceのリポジトリ実装"
+          - "直接DBアクセスのリファクタリング"
+        deliverables:
+          - "リポジトリインターフェース定義"
+          - "リポジトリ実装コード"
+        priority: "高"
+
+      - id: "task2.2"
+        name: "依存性注入パターンの導入"
+        duration: "3日間"
+        description: "サービス層の依存性を明示的に注入する仕組みの導入"
+        dependencies: ["task2.1"]
+        subtasks:
+          - "依存性注入構造の設計"
+          - "ハンドラーとサービスの接続修正"
+          - "テスト用モックの整備"
+        deliverables:
+          - "依存性注入を用いた初期化コード"
+        priority: "中"
+
+      - id: "task2.3"
+        name: "認証システムの改善"
+        duration: "5日間"
+        description: "Firebase認証の一貫した活用とセキュリティ向上"
+        subtasks:
+          - "シミュレーション認証の除去"
+          - "Firebase SDK v4対応の完全実装"
+          - "認証フローのセキュリティレビュー"
+        deliverables:
+          - "セキュアな認証システム"
+          - "認証フロー文書"
+        priority: "高"
+
+      - id: "task2.4"
+        name: "フェーズ2検証"
+        duration: "2日間"
+        description: "アーキテクチャ改善の成果を検証"
+        dependencies: ["task2.1", "task2.2", "task2.3"]
+        subtasks:
+          - "アーキテクチャ設計レビュー"
+          - "コード品質メトリクス測定"
+          - "セキュリティチェック"
+        deliverables:
+          - "フェーズ2検証レポート"
+        priority: "高"
+
+  - id: "phase3"
+    name: "品質と保守性の向上"
+    duration: "5週間"
+    start_date: "2025-05-19"
+    end_date: "2025-06-21"
+    description: "テスト拡充とエラーハンドリング改善によるコード品質向上"
+    tasks:
+      - id: "task3.1"
+        name: "テストカバレッジの拡大"
+        duration: "12日間"
+        description: "未テストのサービスとリポジトリにテストを追加"
+        subtasks:
+          - "テスト計画の策定"
+          - "サービス層単体テスト実装"
+          - "リポジトリ層単体テスト実装"
+          - "テストカバレッジ測定と分析"
+        deliverables:
+          - "テストコード"
+          - "カバレッジレポート"
+        priority: "高"
+
+      - id: "task3.2"
+        name: "統合テストの強化"
+        duration: "7日間"
+        description: "エンドツーエンドの重要フローの統合テスト実装"
+        dependencies: ["task3.1"]
+        subtasks:
+          - "統合テスト計画の策定"
+          - "認証フローの統合テスト"
+          - "診断フローの統合テスト"
+          - "決済フローの統合テスト"
+        deliverables:
+          - "統合テストコード"
+          - "テスト実行レポート"
+        priority: "中"
+
+      - id: "task3.3"
+        name: "エラーハンドリングの標準化"
+        duration: "5日間"
+        description: "一貫したエラーパターンの適用"
+        subtasks:
+          - "エラーハンドリングポリシーの策定"
+          - "カスタムエラー型の実装"
+          - "エラーログ改善"
+        deliverables:
+          - "エラーハンドリングライブラリ"
+          - "エラーハンドリングドキュメント"
+        priority: "高"
+
+      - id: "task3.4"
+        name: "フェーズ3検証"
+        duration: "3日間"
+        description: "品質と保守性向上の成果を検証"
+        dependencies: ["task3.1", "task3.2", "task3.3"]
+        subtasks:
+          - "テストカバレッジ確認"
+          - "エラーハンドリング検証"
+          - "総合品質評価"
+        deliverables:
+          - "フェーズ3検証レポート"
+        priority: "高"
+
+  - id: "phase4"
+    name: "最終統合と評価"
+    duration: "3週間"
+    start_date: "2025-06-23"
+    end_date: "2025-07-12"
+    description: "全フェーズの統合とパフォーマンス評価、ドキュメント更新"
+    tasks:
+      - id: "task4.1"
+        name: "最終統合"
+        duration: "6日間"
+        description: "すべてのフェーズで改善されたコードの最終統合"
+        subtasks:
+          - "コードの最終統合"
+          - "リグレッションテスト"
+          - "障害対応"
+        deliverables:
+          - "統合されたコードベース"
+        priority: "高"
+
+      - id: "task4.2"
+        name: "パフォーマンス評価"
+        duration: "4日間"
+        description: "改善後のパフォーマンス評価"
+        dependencies: ["task4.1"]
+        subtasks:
+          - "ベンチマーク設計"
+          - "パフォーマンステスト実行"
+          - "結果分析"
+        deliverables:
+          - "パフォーマンス評価レポート"
+        priority: "中"
+
+      - id: "task4.3"
+        name: "ドキュメント更新"
+        duration: "5日間"
+        description: "技術文書とAPIドキュメントの更新"
+        dependencies: ["task4.1"]
+        subtasks:
+          - "アーキテクチャ文書の更新"
+          - "APIドキュメントの更新"
+          - "開発者ガイドの更新"
+        deliverables:
+          - "更新された技術文書"
+          - "更新されたAPIドキュメント"
+        priority: "中"
+
+      - id: "task4.4"
+        name: "プロジェクト完了レビュー"
+        duration: "3日間"
+        description: "リファクタリング全体の成果評価"
+        dependencies: ["task4.2", "task4.3"]
+        subtasks:
+          - "成果指標の測定"
+          - "目標達成度評価"
+          - "学習と改善点の特定"
+        deliverables:
+          - "プロジェクト完了レポート"
+        priority: "高"
+
+milestones:
+  - name: "基盤安定化完了"
+    date: "2025-04-26"
+    phase: "phase1"
+    deliverables:
+      - "ビルドエラーゼロの統一されたコードベース"
+      - "重複のないサービスレイヤー"
+    success_criteria:
+      - "すべてのソースコードが正常にビルドされる"
+      - "重複コードが5%未満に削減される"
+
+  - name: "アーキテクチャ改善完了"
+    date: "2025-05-17"
+    phase: "phase2"
+    deliverables:
+      - "リポジトリパターンが一貫して適用されたコード"
+      - "セキュアな認証システム"
+    success_criteria:
+      - "直接DBアクセスがサービスレイヤーから排除される"
+      - "認証フローがセキュリティ監査に合格する"
+
+  - name: "品質向上完了"
+    date: "2025-06-21"
+    phase: "phase3"
+    deliverables:
+      - "テストカバレッジ80%以上"
+      - "標準化されたエラーハンドリング"
+    success_criteria:
+      - "テストカバレッジが目標値を達成する"
+      - "すべてのエラーが一貫したパターンで処理される"
+
+  - name: "リファクタリングプロジェクト完了"
+    date: "2025-07-12"
+    phase: "phase4"
+    deliverables:
+      - "最終統合されたコードベース"
+      - "更新された技術文書"
+      - "完了レポート"
+    success_criteria:
+      - "すべての成功指標が目標値を達成する"
+      - "ドキュメントが最新のコードベースを正確に反映している"
+
+progress_tracking:
+  reporting_frequency: "週次"
+  key_performance_indicators:
+    - "タスク完了率"
+    - "バグ検出数"
+    - "テストカバレッジ率"
+    - "コード品質メトリクス"
+  status_updates:
+    - date: "2025-04-20"
+      planned: ["task1.1", "task1.2"]
+      completed: []
+      in_progress: []
+      blocked: []
+      comments: "プロジェクト開始前の初期ステータス"
+    - date: "2025-04-26"
+      planned: ["task1.1", "task1.2", "task1.3", "task1.4", "task1.5"]
+      completed: ["task1.1", "task1.2", "task1.3", "task1.4", "task1.5"]
+      in_progress: []
+      blocked: []
+      comments: "Phase 1: 基盤の安定化 完了"
+    - date: "2025-05-17" # Phase 2 終了日
+      planned: ["task2.1", "task2.2", "task2.3"]
+      completed: ["task2.1", "task2.2", "task2.3"]
+      in_progress: []
+      blocked: []
+      comments: "Phase 2: アーキテクチャの改善 完了。リポジトリパターン適用、DI導入、認証システム改善実施。依存関係に課題あり。"
+
+risks_and_mitigations:
+  - risk: "リファクタリング中の機能リグレッション"
+    impact: "高"
+    probability: "中"
+    mitigation: "各フェーズごとの機能テスト実施と自動テストの拡充"
+
+  - risk: "開発チームへの影響"
+    impact: "中"
+    probability: "高"
+    mitigation: "機能開発とリファクタリングを分離するブランチ戦略の採用"
+
+  - risk: "スケジュール遅延"
+    impact: "中"
+    probability: "中"
+    mitigation: "フェーズごとに独立した価値を提供するアプローチと週次の進捗確認"
+
+  - risk: "知識の分散"
+    impact: "高"
+    probability: "低"
+    mitigation: "詳細なドキュメント作成とナレッジ共有セッションの実施"
+
+resources:
+  team:
+    - role: "バックエンド開発者"
+      allocation: "100%"
+      phases: ["phase1", "phase2", "phase3", "phase4"]
+
+    - role: "テストエンジニア"
+      allocation: "50%"
+      phases: ["phase3", "phase4"]
+
+    - role: "テックリード"
+      allocation: "30%"
+      phases: ["phase1", "phase2", "phase3", "phase4"]
+
+  tools:
+    - name: "Go言語開発環境"
+      purpose: "コーディングとビルド"
+
+    - name: "Git/GitHub"
+      purpose: "バージョン管理とコード共有"
+
+    - name: "GoLand/VSCode"
+      purpose: "IDE"
+
+    - name: "SonarQube"
+      purpose: "コード品質分析"
+
+post_implementation:
+  monitoring:
+    - "継続的なコードレビュープロセスの確立"
+    - "定期的なコード品質メトリクスの測定"
+
+  maintenance:
+    - "定期的なコード整理の実施"
+    - "テスト自動化の継続的拡充"
+
+  knowledge_transfer:
+    - "更新されたコーディング標準の共有"
+    - "アーキテクチャドキュメントのメンテナンス"

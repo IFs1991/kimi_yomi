@@ -4,30 +4,36 @@ import (
 	"kimiyomi/models"
 	"kimiyomi/services"
 	"net/http"
-	"strconv"
+
+	// "strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-type ContentHandler struct {
+// ContentAPI handles content related API requests.
+// Renamed from ContentHandler
+type ContentAPI struct {
 	contentService services.ContentService
 }
 
-func NewContentHandler(contentService services.ContentService) *ContentHandler {
-	return &ContentHandler{
+// NewContentAPI creates a new ContentAPI instance.
+// Renamed from NewContentHandler
+func NewContentAPI(contentService services.ContentService) *ContentAPI {
+	return &ContentAPI{
 		contentService: contentService,
 	}
 }
 
 // CreateContent handles content creation
-func (h *ContentHandler) CreateContent(c *gin.Context) {
+func (h *ContentAPI) CreateContent(c *gin.Context) {
 	var content models.Content
 	if err := c.ShouldBindJSON(&content); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := h.contentService.CreateContent(&content); err != nil {
+	// Pass context to service method
+	if err := h.contentService.CreateContent(c.Request.Context(), &content); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -36,11 +42,13 @@ func (h *ContentHandler) CreateContent(c *gin.Context) {
 }
 
 // GetContent handles retrieving a content item
-func (h *ContentHandler) GetContent(c *gin.Context) {
+func (h *ContentAPI) GetContent(c *gin.Context) {
 	contentID := c.Param("id")
-	content, err := h.contentService.GetContent(contentID)
+	// Pass context to service method
+	content, err := h.contentService.GetContent(c.Request.Context(), contentID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Content not found"})
+		// Consider differentiating between Not Found and other errors
+		c.JSON(http.StatusNotFound, gin.H{"error": "Content not found or error retrieving content"})
 		return
 	}
 
@@ -48,15 +56,17 @@ func (h *ContentHandler) GetContent(c *gin.Context) {
 }
 
 // UpdateContent handles content updates
-func (h *ContentHandler) UpdateContent(c *gin.Context) {
+func (h *ContentAPI) UpdateContent(c *gin.Context) {
+	contentID := c.Param("id") // Get ID from path
 	var content models.Content
 	if err := c.ShouldBindJSON(&content); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	content.ID = contentID // Set the ID from path param, overriding any potential ID in body
 
-	content.ID = c.Param("id")
-	if err := h.contentService.UpdateContent(&content); err != nil {
+	// Pass context to service method
+	if err := h.contentService.UpdateContent(c.Request.Context(), &content); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -65,9 +75,10 @@ func (h *ContentHandler) UpdateContent(c *gin.Context) {
 }
 
 // DeleteContent handles content deletion
-func (h *ContentHandler) DeleteContent(c *gin.Context) {
+func (h *ContentAPI) DeleteContent(c *gin.Context) {
 	contentID := c.Param("id")
-	if err := h.contentService.DeleteContent(contentID); err != nil {
+	// Pass context to service method
+	if err := h.contentService.DeleteContent(c.Request.Context(), contentID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -75,29 +86,41 @@ func (h *ContentHandler) DeleteContent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Content deleted successfully"})
 }
 
-// ListContents handles retrieving a list of content items
-func (h *ContentHandler) ListContents(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+// ListContents handles retrieving a list of content items based on filters
+func (h *ContentAPI) ListContents(c *gin.Context) {
+	// Extract filter parameters from query string
+	var filter models.ContentFilter
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid filter parameters: " + err.Error()})
+		return
+	}
 
-	contents, total, err := h.contentService.ListContents(page, pageSize)
+	// Pass context and filter to service method
+	contents, err := h.contentService.ListContents(c.Request.Context(), filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"contents": contents,
-		"total":    total,
-		"page":     page,
-		"pageSize": pageSize,
-	})
+	// Return the list of contents
+	c.JSON(http.StatusOK, contents)
 }
 
-// ListContentsByType handles retrieving content items by type
-func (h *ContentHandler) ListContentsByType(c *gin.Context) {
+// ListContentsByType handles retrieving content items by type (maps to ListContents with filter)
+func (h *ContentAPI) ListContentsByType(c *gin.Context) {
 	contentType := c.Param("type")
-	contents, err := h.contentService.ListContentsByType(contentType)
+	if contentType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Content type parameter is required"})
+		return
+	}
+
+	filter := models.ContentFilter{
+		Type: contentType,
+		// Add other potential default filters or extract from query
+	}
+
+	// Pass context and filter to service method
+	contents, err := h.contentService.ListContents(c.Request.Context(), filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -106,7 +129,8 @@ func (h *ContentHandler) ListContentsByType(c *gin.Context) {
 	c.JSON(http.StatusOK, contents)
 }
 
-// RegisterRoutes registers content routes
+/*
+// Remove RegisterRoutes as routes are defined in main.go
 func (h *ContentHandler) RegisterRoutes(router *gin.RouterGroup) {
 	contents := router.Group("/contents")
 	{
@@ -118,3 +142,4 @@ func (h *ContentHandler) RegisterRoutes(router *gin.RouterGroup) {
 		contents.GET("/type/:type", h.ListContentsByType)
 	}
 }
+*/

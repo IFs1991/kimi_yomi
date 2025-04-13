@@ -5,8 +5,6 @@ import (
 
 	"kimiyomi/models"
 	"kimiyomi/repository"
-
-	"gorm.io/gorm"
 )
 
 // ContentService handles business logic for content-related operations
@@ -20,24 +18,18 @@ type ContentService interface {
 
 type contentService struct {
 	repo repository.ContentRepository
-	db   *gorm.DB
 }
 
 // NewContentService creates a new instance of ContentService
-func NewContentService(repo repository.ContentRepository, db *gorm.DB) ContentService {
+func NewContentService(repo repository.ContentRepository) ContentService {
 	return &contentService{
 		repo: repo,
-		db:   db,
 	}
 }
 
 // GetContent retrieves content by ID
 func (s *contentService) GetContent(ctx context.Context, id string) (*models.Content, error) {
-	var content models.Content
-	if err := s.db.First(&content, "id = ?", id).Error; err != nil {
-		return nil, err
-	}
-	return &content, nil
+	return s.repo.GetByID(ctx, id)
 }
 
 // ListContents retrieves contents based on filter
@@ -64,44 +56,4 @@ func (s *contentService) UpdateContent(ctx context.Context, content *models.Cont
 // DeleteContent deletes content by ID
 func (s *contentService) DeleteContent(ctx context.Context, id string) error {
 	return s.repo.Delete(ctx, id)
-}
-
-// ListContents retrieves a list of content items with pagination
-func (s *contentService) ListContents(page, pageSize int) ([]models.Content, int64, error) {
-	var contents []models.Content
-	var total int64
-
-	if err := s.db.Model(&models.Content{}).Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
-	offset := (page - 1) * pageSize
-	if err := s.db.Offset(offset).Limit(pageSize).Find(&contents).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return contents, total, nil
-}
-
-// ListContentsByType retrieves content items by type
-func (s *contentService) ListContentsByType(contentType string) ([]models.Content, error) {
-	var contents []models.Content
-	if err := s.db.Where("type = ?", contentType).Find(&contents).Error; err != nil {
-		return nil, err
-	}
-	return contents, nil
-}
-
-// UpdateContentStatus updates the status of a content item
-func (s *contentService) UpdateContentStatus(contentID string, status string) error {
-	return s.db.Model(&models.Content{}).Where("id = ?", contentID).Update("status", status).Error
-}
-
-// GetContentByAccessLevel retrieves content items by access level
-func (s *contentService) GetContentByAccessLevel(accessLevel string) ([]models.Content, error) {
-	var contents []models.Content
-	if err := s.db.Where("access_level = ?", accessLevel).Find(&contents).Error; err != nil {
-		return nil, err
-	}
-	return contents, nil
 }

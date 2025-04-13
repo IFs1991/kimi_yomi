@@ -1,27 +1,31 @@
 package services
 
 import (
+	"context"
 	"kimiyomi/models"
+	"kimiyomi/repository"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-type AuthService struct {
-	userRepo UserRepository
+// AuthService handles authentication logic
+type AuthService interface {
+	Register(ctx context.Context, email, password string) (*models.User, error)
+	Login(ctx context.Context, email, password string) (*models.User, error)
+	ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string) error
 }
 
-type UserRepository interface {
-	CreateUser(user *models.User) error
-	FindUserByEmail(email string) (*models.User, error)
-	FindUserByID(userID uint) (*models.User, error)
-	UpdateUser(user *models.User) error
+// authService implements AuthService
+type authService struct {
+	userRepo repository.UserRepository
 }
 
-func NewAuthService(repo UserRepository) *AuthService {
-	return &AuthService{userRepo: repo}
+// NewAuthService creates a new instance of AuthService
+func NewAuthService(repo repository.UserRepository) AuthService {
+	return &authService{userRepo: repo}
 }
 
-func (s *AuthService) Register(email, password string) (*models.User, error) {
+func (s *authService) Register(ctx context.Context, email, password string) (*models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -32,15 +36,15 @@ func (s *AuthService) Register(email, password string) (*models.User, error) {
 		Password: string(hashedPassword),
 	}
 
-	if err := s.userRepo.CreateUser(user); err != nil {
+	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func (s *AuthService) Login(email, password string) (*models.User, error) {
-	user, err := s.userRepo.FindUserByEmail(email)
+func (s *authService) Login(ctx context.Context, email, password string) (*models.User, error) {
+	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +56,8 @@ func (s *AuthService) Login(email, password string) (*models.User, error) {
 	return user, nil
 }
 
-func (s *AuthService) ChangePassword(userID uint, oldPassword, newPassword string) error {
-	user, err := s.userRepo.FindUserByID(userID)
+func (s *authService) ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string) error {
+	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -68,5 +72,5 @@ func (s *AuthService) ChangePassword(userID uint, oldPassword, newPassword strin
 	}
 
 	user.Password = string(hashedPassword)
-	return s.userRepo.UpdateUser(user)
+	return s.userRepo.Update(ctx, user)
 }

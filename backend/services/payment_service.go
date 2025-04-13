@@ -11,87 +11,46 @@ import (
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/paymentintent"
 	"github.com/stripe/stripe-go/refund"
-	"gorm.io/gorm"
+	// "gorm.io/gorm" // Remove gorm import
 )
 
 // PaymentService handles all payment related business logic
 type PaymentService interface {
-	ProcessPayment(ctx context.Context, payment *models.Payment) error
+	CreatePaymentIntent(ctx context.Context, userID string, amount float64, currency string) (*models.Payment, *stripe.PaymentIntent, error)
 	GetPaymentByID(ctx context.Context, paymentID string) (*models.Payment, error)
-	ListPayments(ctx context.Context, userID string) ([]*models.Payment, error)
-	CreatePayment(userID string, amount float64, currency string) (*models.Payment, error)
-	GetPayment(paymentID string) (*models.Payment, error)
-	UpdatePaymentStatus(paymentID string, status string) error
-	ProcessRefund(paymentID string) error
-	GetUserPayments(userID string) ([]models.Payment, error)
+	ListUserPayments(ctx context.Context, userID string) ([]*models.Payment, error)
+	UpdatePaymentStatus(ctx context.Context, paymentID string, status string) error
+	ProcessRefund(ctx context.Context, paymentID string) error
 }
 
+// paymentService implements PaymentService
 type paymentService struct {
-	repo repository.PaymentRepository
-	db   *gorm.DB
+	payRepo  repository.PaymentRepository // Use repository.PaymentRepository
+	userRepo repository.UserRepository    // Use repository.UserRepository (optional, depending on needs)
 }
 
 // NewPaymentService creates a new instance of PaymentService
-func NewPaymentService(repo repository.PaymentRepository, db *gorm.DB) PaymentService {
+func NewPaymentService(payRepo repository.PaymentRepository, userRepo repository.UserRepository) PaymentService {
 	return &paymentService{
-		repo: repo,
-		db:   db,
+		payRepo:  payRepo,
+		userRepo: userRepo,
 	}
 }
 
-// ProcessPayment handles the payment processing logic
-func (s *paymentService) ProcessPayment(ctx context.Context, payment *models.Payment) error {
-	// Validate payment
-	if err := payment.Validate(); err != nil {
-		return err
-	}
+// CreatePaymentIntent creates a new payment intent and saves the initial payment record
+func (s *paymentService) CreatePaymentIntent(ctx context.Context, userID string, amount float64, currency string) (*models.Payment, *stripe.PaymentIntent, error) {
+	// TODO: Validate user existence using userRepo if necessary
 
-	// Set payment timestamp
-	payment.CreatedAt = time.Now()
-	payment.UpdatedAt = time.Now()
-
-	// Process payment through external payment gateway
-	// TODO: Implement payment gateway integration
-
-	// Save payment to database
-	if err := s.repo.CreatePayment(ctx, payment); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetPaymentByID retrieves a payment by its ID
-func (s *paymentService) GetPaymentByID(ctx context.Context, paymentID string) (*models.Payment, error) {
-	payment, err := s.repo.GetPaymentByID(ctx, paymentID)
-	if err != nil {
-		return nil, err
-	}
-	if payment == nil {
-		return nil, errors.New("payment not found")
-	}
-	return payment, nil
-}
-
-// ListPayments retrieves all payments for a user
-func (s *paymentService) ListPayments(ctx context.Context, userID string) ([]*models.Payment, error) {
-	payments, err := s.repo.ListPaymentsByUserID(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-	return payments, nil
-}
-
-// CreatePayment creates a new payment intent
-func (s *paymentService) CreatePayment(userID string, amount float64, currency string) (*models.Payment, error) {
 	params := &stripe.PaymentIntentParams{
-		Amount:   stripe.Int64(int64(amount * 100)), // Convert to cents
+		Amount:   stripe.Int64(int64(amount * 100)), // Amount in cents
 		Currency: stripe.String(currency),
+		// Add customer ID if available: Customer: stripe.String(user.StripeCustomerID),
+		// Add other necessary params like metadata, description, etc.
 	}
 
 	pi, err := paymentintent.New(params)
 	if err != nil {
-		return nil, err
+		return nil, nil, err // Return payment intent error
 	}
 
 	payment := &models.Payment{
@@ -99,59 +58,85 @@ func (s *paymentService) CreatePayment(userID string, amount float64, currency s
 		Amount:        amount,
 		Currency:      currency,
 		Status:        models.PaymentStatusPending,
-		PaymentMethod: models.PaymentMethodCard,
+		PaymentMethod: models.PaymentMethodCard, // Or determine dynamically
 		StripeID:      pi.ID,
+		// CreatedAt and UpdatedAt are handled by GORM/repository
 	}
 
-	if err := s.db.Create(payment).Error; err != nil {
-		return nil, err
+	// Use repository to create payment
+	if err := s.payRepo.CreatePayment(ctx, payment); err != nil {
+		// TODO: Consider canceling the payment intent if db creation fails
+		return nil, pi, err // Return db error, but also the created payment intent
 	}
 
+	return payment, pi, nil
+}
+
+// GetPaymentByID retrieves a payment by its ID using the repository
+func (s *paymentService) GetPaymentByID(ctx context.Context, paymentID string) (*models.Payment, error) {
+	payment, err := s.payRepo.GetPaymentByID(ctx, paymentID)
+	if err != nil {
+		return nil, err // Includes record not found
+	}
 	return payment, nil
 }
 
-// GetPayment retrieves a payment by ID
-func (s *paymentService) GetPayment(paymentID string) (*models.Payment, error) {
-	var payment models.Payment
-	if err := s.db.First(&payment, "id = ?", paymentID).Error; err != nil {
-		return nil, err
-	}
-	return &payment, nil
+// ListUserPayments retrieves all payments for a user using the repository
+func (s *paymentService) ListUserPayments(ctx context.Context, userID string) ([]*models.Payment, error) {
+	return s.payRepo.ListPaymentsByUserID(ctx, userID)
 }
 
-// UpdatePaymentStatus updates the status of a payment
-func (s *paymentService) UpdatePaymentStatus(paymentID string, status string) error {
-	return s.db.Model(&models.Payment{}).Where("id = ?", paymentID).Update("status", status).Error
+// UpdatePaymentStatus updates the status of a payment using the repository
+func (s *paymentService) UpdatePaymentStatus(ctx context.Context, paymentID string, status string) error {
+	// Optional: Add validation for allowed status transitions
+	payment, err := s.payRepo.GetPaymentByID(ctx, paymentID)
+	if err != nil {
+		return err
+	}
+	payment.Status = status
+	payment.UpdatedAt = time.Now() // Manually update UpdatedAt or handle in repo
+	return s.payRepo.UpdatePayment(ctx, payment)
 }
 
 // ProcessRefund processes a refund for a payment
-func (s *paymentService) ProcessRefund(paymentID string) error {
-	payment, err := s.GetPayment(paymentID)
+func (s *paymentService) ProcessRefund(ctx context.Context, paymentID string) error {
+	payment, err := s.payRepo.GetPaymentByID(ctx, paymentID)
 	if err != nil {
 		return err
 	}
 
 	if payment.Status != models.PaymentStatusSucceeded {
-		return errors.New("payment cannot be refunded")
+		return errors.New("payment cannot be refunded as it has not succeeded")
 	}
 
-	// Process refund through Stripe
+	// Process refund through Stripe using Payment Intent ID
 	refundParams := &stripe.RefundParams{
 		PaymentIntent: stripe.String(payment.StripeID),
+		// Add other refund params like amount, reason, metadata if needed
 	}
 	_, err = refund.New(refundParams)
 	if err != nil {
-		return err
+		return err // Return Stripe refund error
 	}
 
-	return s.UpdatePaymentStatus(paymentID, models.PaymentStatusRefunded)
+	// Update local payment status using the dedicated method
+	return s.UpdatePaymentStatus(ctx, paymentID, models.PaymentStatusRefunded)
+}
+
+/*
+// Remove old/duplicate methods that were directly using DB
+// ProcessPayment handles the payment processing logic
+func (s *paymentService) ProcessPayment(ctx context.Context, payment *models.Payment) error {
+	// ... (Implementation using repo.CreatePayment exists)
+}
+
+// GetPayment retrieves a payment by ID
+func (s *paymentService) GetPayment(paymentID string) (*models.Payment, error) {
+	// ... (Implementation using repo.GetPaymentByID exists)
 }
 
 // GetUserPayments retrieves all payments for a user
 func (s *paymentService) GetUserPayments(userID string) ([]models.Payment, error) {
-	var payments []models.Payment
-	if err := s.db.Where("user_id = ?", userID).Find(&payments).Error; err != nil {
-		return nil, err
-	}
-	return payments, nil
+	// ... (Implementation using repo.ListPaymentsByUserID exists)
 }
+*/

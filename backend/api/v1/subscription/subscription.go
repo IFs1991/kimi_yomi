@@ -1,7 +1,6 @@
 package subscription
 
 import (
-	"context"
 	"kimiyomi/models"
 	"kimiyomi/services"
 	"net/http"
@@ -9,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Request/Response structs
+/* // Remove unused Request/Response structs
 type CreateSubscriptionRequest struct {
 	UserID      string      `json:"user_id" validate:"required"`
 	PlanID      string      `json:"plan_id" validate:"required"`
@@ -28,24 +27,28 @@ type SubscriptionResponse struct {
 	Status    string `json:"status"`
 	CreatedAt string `json:"created_at"`
 }
+*/
 
-// Handler struct
-type SubscriptionHandler struct {
+// SubscriptionAPI handles subscription related API requests.
+// Renamed from SubscriptionHandler
+type SubscriptionAPI struct {
 	subscriptionService services.SubscriptionService
 }
 
-// NewSubscriptionHandler creates a new subscription handler
-func NewSubscriptionHandler(subscriptionService services.SubscriptionService) *SubscriptionHandler {
-	return &SubscriptionHandler{
+// NewSubscriptionAPI creates a new subscription handler instance.
+// Renamed from NewSubscriptionHandler
+func NewSubscriptionAPI(subscriptionService services.SubscriptionService) *SubscriptionAPI {
+	return &SubscriptionAPI{
 		subscriptionService: subscriptionService,
 	}
 }
 
 // CreateSubscription handles subscription creation
-func (h *SubscriptionHandler) CreateSubscription(c *gin.Context) {
+func (h *SubscriptionAPI) CreateSubscription(c *gin.Context) {
 	var req struct {
 		PlanID       string `json:"plan_id" binding:"required"`
 		BillingCycle string `json:"billing_cycle" binding:"required,oneof=monthly yearly"`
+		// Add PaymentMethodID or other necessary fields from client
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -53,32 +56,45 @@ func (h *SubscriptionHandler) CreateSubscription(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetString("user_id") // From auth middleware
+	userID, exists := c.Get("uid") // From auth middleware (string)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
-	// Create models.Subscription object (example - adjust as needed)
+	// Create models.Subscription object
 	subscription := &models.Subscription{
-		UserID:       userID,
+		UserID:       userID.(string),
 		PlanID:       req.PlanID,
 		BillingCycle: req.BillingCycle,
-		// Set other fields like StartDate, AutoRenew based on logic
+		Status:       models.SubscriptionStatusActive, // Initial status
+		AutoRenew:    true,                            // Default auto-renew
+		// Set StartDate, EndDate based on PlanID and BillingCycle logic
+		// Link Stripe Subscription ID after successful payment/setup
 	}
 
 	// Pass context and the subscription object
 	if err := h.subscriptionService.CreateSubscription(c.Request.Context(), subscription); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		// Consider more specific error handling (e.g., duplicate subscription)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create subscription: " + err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, subscription) // Return the created subscription
+	// Return the created subscription (or relevant parts)
+	c.JSON(http.StatusCreated, subscription)
 }
 
 // GetSubscription handles retrieving a subscription
-func (h *SubscriptionHandler) GetSubscription(c *gin.Context) {
+func (h *SubscriptionAPI) GetSubscription(c *gin.Context) {
 	subscriptionID := c.Param("id")
+
+	// TODO: Validate that the requesting user owns this subscription or has permission
+	// userID, _ := c.Get("uid")
+
 	// Pass context
 	subscription, err := h.subscriptionService.GetSubscription(c.Request.Context(), subscriptionID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Subscription not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Subscription not found or error retrieving subscription"})
 		return
 	}
 
@@ -86,11 +102,16 @@ func (h *SubscriptionHandler) GetSubscription(c *gin.Context) {
 }
 
 // CancelSubscription handles subscription cancellation
-func (h *SubscriptionHandler) CancelSubscription(c *gin.Context) {
+func (h *SubscriptionAPI) CancelSubscription(c *gin.Context) {
 	subscriptionID := c.Param("id")
+
+	// TODO: Validate that the requesting user owns this subscription or has permission
+	// userID, _ := c.Get("uid")
+
 	// Pass context
 	err := h.subscriptionService.CancelSubscription(c.Request.Context(), subscriptionID)
 	if err != nil {
+		// Handle specific errors (e.g., already cancelled)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -98,31 +119,41 @@ func (h *SubscriptionHandler) CancelSubscription(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Subscription cancelled successfully"})
 }
 
-// GetUserSubscriptions handles retrieving all subscriptions for a user
-func (h *SubscriptionHandler) GetUserSubscriptions(c *gin.Context) {
-	// userID := c.GetString("user_id") // From auth middleware
-	// subscriptions, err := h.subscriptionService.GetUserSubscriptions(userID) // Method does not exist on interface
+/*
+// GetUserSubscriptions - Service method not available in interface
+func (h *SubscriptionAPI) GetUserSubscriptions(c *gin.Context) {
+	userID, exists := c.Get("uid")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// subscriptions, err := h.subscriptionService.GetUserSubscriptions(c.Request.Context(), userID.(string))
 	// if err != nil {
 	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	// 	return
 	// }
 	// c.JSON(http.StatusOK, subscriptions)
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "GetUserSubscriptions not implemented"})
+	c.JSON(http.StatusNotImplemented, gin.H{"message": "GetUserSubscriptions endpoint not fully implemented"})
 }
 
-// RenewSubscription handles subscription renewal
-func (h *SubscriptionHandler) RenewSubscription(c *gin.Context) {
-	// subscriptionID := c.Param("id")
-	// err := h.subscriptionService.RenewSubscription(subscriptionID) // Method does not exist on interface
+// RenewSubscription - Service method not available in interface
+func (h *SubscriptionAPI) RenewSubscription(c *gin.Context) {
+	subscriptionID := c.Param("id")
+	// TODO: Validate ownership
+
+	// err := h.subscriptionService.RenewSubscription(c.Request.Context(), subscriptionID)
 	// if err != nil {
 	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	// 	return
 	// }
 	// c.JSON(http.StatusOK, gin.H{"message": "Subscription renewed successfully"})
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "RenewSubscription not implemented"})
+	c.JSON(http.StatusNotImplemented, gin.H{"message": "RenewSubscription endpoint not fully implemented"})
 }
+*/
 
-// RegisterRoutes registers subscription routes
+/*
+// Remove RegisterRoutes
 func (h *SubscriptionHandler) RegisterRoutes(router *gin.RouterGroup) {
 	subscriptions := router.Group("/subscriptions")
 	{
@@ -133,8 +164,11 @@ func (h *SubscriptionHandler) RegisterRoutes(router *gin.RouterGroup) {
 		subscriptions.GET("", h.GetUserSubscriptions)
 	}
 }
+*/
 
-// Interface for service layer
+/*
+// Remove extra interface definition
 type SubscriptionAPI interface {
 	CreateSubscription(ctx context.Context, req CreateSubscriptionRequest) (*SubscriptionResponse, error)
 }
+*/

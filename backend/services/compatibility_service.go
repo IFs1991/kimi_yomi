@@ -1,75 +1,87 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"kimiyomi/models"
-	"time"
-
-	"gorm.io/gorm"
+	"kimiyomi/repository"
 )
 
-type CompatibilityService struct {
-	db *gorm.DB
+// CompatibilityService defines the interface for compatibility logic
+type CompatibilityService interface {
+	CalculateCompatibility(ctx context.Context, user1ID string, user2ID string) (*models.Compatibility, error)
+	GetDailyCompatibility(ctx context.Context, userID string) (*models.Compatibility, error)
+	GetCompatibilityHistory(ctx context.Context, userID string, limit int) ([]models.Compatibility, error)
 }
 
-func NewCompatibilityService(db *gorm.DB) *CompatibilityService {
-	return &CompatibilityService{db: db}
+// compatibilityService implements CompatibilityService
+type compatibilityService struct {
+	compRepo repository.CompatibilityRepository
+	userRepo repository.UserRepository
 }
 
-// CalculateCompatibility 2人のユーザー間の相性を計算
-func (s *CompatibilityService) CalculateCompatibility(user1ID, user2ID uint) (*models.Compatibility, error) {
-	// 既存の有効な相性診断結果を確認
-	var existing models.Compatibility
-	err := s.db.Where("(user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)",
-		user1ID, user2ID, user2ID, user1ID).
-		Where("expires_at > ?", time.Now()).
-		First(&existing).Error
-
-	if err == nil {
-		return &existing, nil
+// NewCompatibilityService creates a new instance of CompatibilityService
+func NewCompatibilityService(compRepo repository.CompatibilityRepository, userRepo repository.UserRepository) CompatibilityService {
+	return &compatibilityService{
+		compRepo: compRepo,
+		userRepo: userRepo,
 	}
+}
 
-	// ユーザーの診断結果を取得
-	var user1, user2 models.User
-	if err := s.db.First(&user1, user1ID).Error; err != nil {
+// CalculateCompatibility calculates compatibility between two users
+func (s *compatibilityService) CalculateCompatibility(ctx context.Context, user1ID string, user2ID string) (*models.Compatibility, error) {
+	// TODO: Check for existing valid compatibility result using compRepo
+	// existing, err := s.compRepo.FindValidCompatibility(ctx, user1ID, user2ID)
+	// if err == nil {
+	// 	 return existing, nil
+	// } else if !errors.Is(err, gorm.ErrRecordNotFound) { // Handle other errors
+	// 	 return nil, err
+	// }
+
+	// Get user diagnosis results using userRepo
+	user1, err := s.userRepo.GetByID(ctx, user1ID)
+	if err != nil {
 		return nil, errors.New("user1 not found")
 	}
-	if err := s.db.First(&user2, user2ID).Error; err != nil {
+	user2, err := s.userRepo.GetByID(ctx, user2ID)
+	if err != nil {
 		return nil, errors.New("user2 not found")
 	}
 
-	// 診断結果が完了していない場合はエラー
+	// Check if both users have completed diagnosis
 	if user1.LastDiagnosis.IsZero() || user2.LastDiagnosis.IsZero() {
 		return nil, errors.New("both users must complete diagnosis first")
 	}
 
-	// 相性を計算
-	compatibility := models.CalculateCompatibility(&user1, &user2)
+	// Calculate compatibility (assuming this logic stays in models or is moved to service)
+	compatibility := models.CalculateCompatibility(user1, user2)
 
-	// 相性の説明文を生成
+	// Generate description
 	compatibility.Description = s.generateCompatibilityDescription(compatibility)
 
-	// データベースに保存
-	if err := s.db.Create(compatibility).Error; err != nil {
+	// Save the result using compRepo
+	if err := s.compRepo.CreateCompatibilityResult(ctx, compatibility); err != nil {
 		return nil, err
 	}
 
 	return compatibility, nil
 }
 
-// GetDailyCompatibility 日替わり相性診断を取得
-func (s *CompatibilityService) GetDailyCompatibility(userID uint) (*models.Compatibility, error) {
-	// ランダムなユーザーを選択（自分以外）
-	var randomUser models.User
-	if err := s.db.Where("id != ?", userID).Order("RANDOM()").First(&randomUser).Error; err != nil {
-		return nil, err
-	}
+// GetDailyCompatibility gets a daily compatibility check with a random user
+func (s *compatibilityService) GetDailyCompatibility(ctx context.Context, userID string) (*models.Compatibility, error) {
+	// TODO: Get a random user ID (excluding userID) using userRepo
+	// randomUserID, err := s.userRepo.GetRandomUserID(ctx, userID)
+	// if err != nil {
+	// 	 return nil, err
+	// }
+	var randomUserID string = "some_random_user_id" // Placeholder
 
-	return s.CalculateCompatibility(userID, randomUser.ID)
+	return s.CalculateCompatibility(ctx, userID, randomUserID)
 }
 
-// generateCompatibilityDescription 相性診断結果の説明文を生成
-func (s *CompatibilityService) generateCompatibilityDescription(c *models.Compatibility) string {
+// generateCompatibilityDescription generates the description text for a compatibility result
+// (This method remains largely unchanged as it's pure logic)
+func (s *compatibilityService) generateCompatibilityDescription(c *models.Compatibility) string {
 	var description string
 
 	// 総合評価
@@ -83,7 +95,7 @@ func (s *CompatibilityService) generateCompatibilityDescription(c *models.Compat
 		description = "少し相性に課題があります。お互いの違いを理解し、尊重し合うことが大切です。"
 	}
 
-	// 詳細スコアに基づくアドバイス
+	// 詳細スコアに基づくアドバイス (Assuming Details field exists)
 	if c.Details.ValueScore >= 70 {
 		description += "\n価値観が非常に近く、お互いを理解しやすい関係です。"
 	}
@@ -100,13 +112,9 @@ func (s *CompatibilityService) generateCompatibilityDescription(c *models.Compat
 	return description
 }
 
-// GetCompatibilityHistory ユーザーの相性診断履歴を取得
-func (s *CompatibilityService) GetCompatibilityHistory(userID uint, limit int) ([]models.Compatibility, error) {
-	var history []models.Compatibility
-	err := s.db.Where("user1_id = ? OR user2_id = ?", userID, userID).
-		Order("created_at DESC").
-		Limit(limit).
-		Find(&history).Error
-
-	return history, err
+// GetCompatibilityHistory retrieves compatibility history for a user
+func (s *compatibilityService) GetCompatibilityHistory(ctx context.Context, userID string, limit int) ([]models.Compatibility, error) {
+	// Use compRepo to get history
+	// return s.compRepo.GetCompatibilityHistoryByUserID(ctx, userID, limit)
+	return nil, errors.New("GetCompatibilityHistory not fully implemented") // Placeholder
 }

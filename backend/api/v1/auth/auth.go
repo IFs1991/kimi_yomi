@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"strings"
 
+	// Import services
+	"kimiyomi/repository" // Import repository
+
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
@@ -17,11 +20,20 @@ import (
 type AuthHandler struct {
 	firebaseAuth *auth.Client
 	app          *firebase.App // Firebase App instance
+	// authService  services.AuthService // Inject AuthService
+	userRepo repository.UserRepository // Inject UserRepository directly for now
+}
+
+// FirebaseAuthClient returns the underlying Firebase Auth client.
+// Needed for middleware setup in main.go
+func (h *AuthHandler) FirebaseAuthClient() *auth.Client {
+	return h.firebaseAuth
 }
 
 // NewAuthHandler creates a new AuthHandler.
-func NewAuthHandler(ctx context.Context, credentialsPath string) (*AuthHandler, error) {
-	opt := option.WithCredentialsFile(credentialsPath) // Path to your Firebase service account key
+// Modified to accept UserRepository
+func NewAuthHandler(ctx context.Context, credentialsPath string, userRepo repository.UserRepository) (*AuthHandler, error) {
+	opt := option.WithCredentialsFile(credentialsPath)
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing app: %v", err)
@@ -32,14 +44,17 @@ func NewAuthHandler(ctx context.Context, credentialsPath string) (*AuthHandler, 
 		return nil, fmt.Errorf("error getting Auth client: %v", err)
 	}
 
-	return &AuthHandler{firebaseAuth: client, app: app}, nil
+	return &AuthHandler{
+		firebaseAuth: client,
+		app:          app,
+		userRepo:     userRepo, // Set userRepo
+	}, nil
 }
 
 func (h *AuthHandler) RegisterRoutes(router *gin.RouterGroup) {
 	router.POST("/register", h.Register)
-	router.POST("/login", h.Login)
+	// router.POST("/login", h.Login) // Remove simulated login endpoint
 	router.POST("/verify-age", h.VerifyAge)         // Custom Claims
-	router.POST("/verify-email", h.VerifyEmail)     // Firebase built-in, plus custom action
 	router.POST("/reset-password", h.ResetPassword) // Firebase built-in
 	router.GET("/users", h.ListAllUsers)            // Example of listing users (admin only)
 	router.DELETE("/user/:uid", h.DeleteUser)
@@ -83,82 +98,6 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully.  Check your email for verification.", "uid": user.UID})
 }
 
-// --- Login ---
-type LoginRequest struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-func (h *AuthHandler) Login(c *gin.Context) {
-	var req LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	// Firebase SDK doesn't have a direct "login" function with email/password.
-	// Instead, you verify an ID token generated on the *client-side* after
-	// the user signs in using the Firebase client SDK.
-	// This endpoint simulates that process for demonstration, but *in a real app*,
-	// you MUST generate the ID token on the client.
-
-	// 1.  ***(SIMULATED)*** Get the user.
-	user, err := h.firebaseAuth.GetUserByEmail(c, req.Email)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-
-	// 2. ***(SIMULATED)*** Check password.  This is *NOT* secure and is for
-	//    DEMONSTRATION ONLY. In your actual application, the client-side SDK
-	//    handles password validation.  We're doing it here to show the flow.
-	if !h.isPasswordValid(user, req.Password, c) { // IMPORTANT:  This needs client SDK.
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-
-	// 3. Check email verification
-	if !user.EmailVerified {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Email not verified"})
-		return
-	}
-
-	// 4. ***(SIMULATED)*** Create a custom token.  In a real app, you'd verify
-	//    the ID token from the client SDK.
-	customToken, err := h.firebaseAuth.CustomToken(c, user.UID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create custom token"})
-		return
-	}
-
-	// In a *real* application, you would verify the ID token from the client
-	// like this:  (This part goes in your middleware, usually)
-	// idToken := c.GetHeader("Authorization") // Get from "Authorization: Bearer <token>"
-	// idToken = strings.Replace(idToken, "Bearer ", "", 1)
-	// token, err := h.firebaseAuth.VerifyIDToken(c, idToken)
-	// ... handle errors, check token.UID, etc.
-
-	c.JSON(http.StatusOK, gin.H{"token": customToken, "uid": user.UID}) // Return the *custom* token.
-}
-
-// isPasswordValid (SIMULATED - FOR DEMO ONLY).  This is NOT how you handle passwords.
-// It's here to illustrate the login flow. The Firebase *client-side* SDK handles this.
-func (h *AuthHandler) isPasswordValid(user *auth.UserRecord, password string, c *gin.Context) bool {
-	// *** VERY IMPORTANT ***
-	// This method is a placeholder for demonstration purposes. In a real application,
-	// you *MUST* use the Firebase CLIENT SDK to handle password verification.  This
-	// server-side check is insecure and should *NEVER* be used in production.
-	// This example simulates what would happen on the client, but you should *never*
-	// expose password checking logic on your server.
-
-	// In a REAL app, use the client SDK to sign in:
-	// firebase.auth().signInWithEmailAndPassword(email, password)
-	//   .then((userCredential) => { ... })
-	//   .catch((error) => { ... });
-
-	// This is just a placeholder to make the demo work.
-	return true
-}
-
 // --- Verify Age (Custom Claims) ---
 
 type VerifyAgeRequest struct {
@@ -195,48 +134,6 @@ func (h *AuthHandler) VerifyAge(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Age verified successfully"})
-}
-
-// --- Verify Email ---
-
-func (h *AuthHandler) VerifyEmail(c *gin.Context) {
-	//  This endpoint handles the action *after* the user clicks the link in the email.
-
-	oobCode := c.Query("oobCode") // Get the oobCode from the query parameter
-	mode := c.Query("mode")       // Get the mode from the query parameter (verifyEmail, resetPassword)
-
-	if oobCode == "" || mode == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing oobCode or mode"})
-		return
-	}
-
-	// Handle email verification.
-	if mode == "verifyEmail" {
-		// _, err := h.firebaseAuth.VerifyEmail(c, oobCode); // SDK v4ではこのメソッドは提供されない
-		// if err != nil {
-		// 	c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Email verification failed: %v", err)})
-		// 	return
-		// }
-		// TODO: Implement email verification using Action Code Handler on client-side
-		c.JSON(http.StatusOK, gin.H{"message": "Email verification endpoint reached (implement client-side logic)"})
-		return
-	}
-
-	// Future extension: Handle password reset here too, if needed.
-	if mode == "resetPassword" {
-		//newPassword := c.PostForm("newPassword")
-
-		// _, err := h.firebaseAuth.VerifyPasswordResetCode(context.Background(), oobCode) // SDK v4ではこのメソッドは提供されない
-		// if err != nil {
-		// 	log.Printf("error verifying password reset code: %v\n", err)
-		// 	// Handle error.
-		// }
-		// TODO: Implement password reset confirmation using Action Code Handler on client-side
-		c.JSON(http.StatusOK, gin.H{"message": "Password reset verification endpoint reached (implement client-side logic)"})
-		return
-	}
-
-	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid mode"}) // Unknown mode
 }
 
 // --- Reset Password ---
