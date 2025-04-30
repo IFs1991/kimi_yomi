@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'src/backend/**'
+      - 'backend/**'
   workflow_dispatch:  # 手動トリガーを追加
 
 env:
@@ -38,7 +38,7 @@ jobs:
 
     - name: Build and Push Container
       run: |
-        cd src/backend
+        cd backend
         docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} .
         docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }}
 

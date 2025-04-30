@@ -157,3 +157,51 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
     );
   }
 }
+
+class _DiagnosisScreenState extends State<DiagnosisScreen> {
+  // final String dummyUserId = 'user123'; // ダミーユーザーIDを削除
+
+  @override
+  void initState() {
+    super.initState();
+    // initState で診断を開始しないように変更 (ボタンタップなどで開始)
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Provider.of<DiagnosisProvider>(context, listen: false).startDiagnosis(dummyUserId);
+    // });
+  }
+
+  void _startDiagnosis() {
+    // AuthProvider から userId を取得するロジックは Provider 内に移動したため、引数なしで呼び出す
+    Provider.of<DiagnosisProvider>(context, listen: false).startDiagnosis();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final diagnosisProvider = Provider.of<DiagnosisProvider>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('性格診断'),
+      ),
+      body: Center(
+        child: diagnosisProvider.isLoading
+            ? CircularProgressIndicator()
+            : diagnosisProvider.currentSession == null
+                ? ElevatedButton(
+                    // onPressed: () => diagnosisProvider.startDiagnosis(dummyUserId), // 修正
+                    onPressed: _startDiagnosis, // 修正
+                    child: Text('診断を開始する'),
+                  )
+                : diagnosisProvider.isComplete
+                    ? DiagnosisResultWidget(result: diagnosisProvider.result!)
+                    : QuestionWidget(
+                        question: diagnosisProvider.currentQuestion!,
+                        onSubmit: (score) {
+                          diagnosisProvider.submitAnswer(score);
+                        },
+                        progress: diagnosisProvider.progress,
+                      ),
+      ),
+    );
+  }
+}

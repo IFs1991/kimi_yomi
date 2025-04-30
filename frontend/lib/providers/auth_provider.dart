@@ -33,6 +33,20 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<void> register(String email, String password) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final user = await _apiService.register(email, password);
+      _currentUser = user;
+      await _storage.write(key: 'userId', value: user.id);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> logout() async {
     _isLoading = true;
     notifyListeners();

@@ -1,17 +1,20 @@
 import 'package:flutter/foundation.dart';
 import '../models/diagnosis_model.dart';
 import '../services/api_service.dart';
+import './auth_provider.dart'; // AuthProvider をインポート
 
 class DiagnosisProvider with ChangeNotifier {
   final ApiService _apiService;
+  final AuthProvider _authProvider; // AuthProvider を保持
   DiagnosisSession? _currentSession;
   Question? _currentQuestion;
   DiagnosisResult? _result;
   bool _isLoading = false;
   Map<String, int> _answers = {};
 
-  DiagnosisProvider({ApiService? apiService})
-      : _apiService = apiService ?? ApiService();
+  DiagnosisProvider({required AuthProvider authProvider, ApiService? apiService})
+      : _authProvider = authProvider, // コンストラクタで AuthProvider を受け取る
+        _apiService = apiService ?? ApiService();
 
   DiagnosisSession? get currentSession => _currentSession;
   Question? get currentQuestion => _currentQuestion;
@@ -21,7 +24,14 @@ class DiagnosisProvider with ChangeNotifier {
   bool get isComplete => _currentSession?.isComplete ?? false;
   double get progress => _answers.length / 50; // 全50問を想定
 
-  Future<void> startDiagnosis(String userId) async {
+  Future<void> startDiagnosis() async { // userId 引数を削除
+    final userId = _authProvider.userId; // AuthProvider から userId を取得
+    if (userId == null) {
+      // ユーザーが認証されていない場合の処理 (例: エラーを投げる、ログイン画面に遷移させるなど)
+      print('User not authenticated');
+      return;
+    }
+
     _isLoading = true;
     notifyListeners();
 

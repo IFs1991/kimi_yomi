@@ -1,0 +1,623 @@
+```yaml
+# キミヨミ改善プロジェクト計画
+
+project:
+  name: "キミヨミ リファクタリング＆バグ修正プロジェクト"
+  description: "性格診断と相性診断アプリケーションのバックエンド・フロントエンド改善プロジェクト"
+  start_date: "2025-05-01"
+  end_date: "2025-07-01"
+
+  stakeholders:
+    - role: "プロジェクトマネージャー"
+      responsibilities: ["計画監視", "リソース管理", "進捗報告"]
+    - role: "バックエンド開発リード"
+      responsibilities: ["技術設計承認", "コードレビュー", "アーキテクチャ決定"]
+    - role: "フロントエンド開発リード"
+      responsibilities: ["UI/UX設計承認", "コードレビュー", "クロスプラットフォーム確認"]
+    - role: "QA担当"
+      responsibilities: ["テスト設計", "テスト実施", "バグ報告"]
+
+overview:
+  goals:
+    - "バックエンドのビルドエラー解消"
+    - "フロントエンドの機能完成"
+    - "コードの重複排除とアーキテクチャの一貫性確保"
+    - "テストカバレッジの向上"
+  success_metrics:
+    - metric: "ビルドエラー"
+      target: "ゼロエラー"
+    - metric: "コードの重複率"
+      target: "5%未満（現状15-20%から低減）"
+    - metric: "テストカバレッジ"
+      target: "80%以上（現状40%から向上）"
+    - metric: "バグ発生率"
+      target: "25%減少"
+
+phases:
+  - id: "phase1"
+    name: "バックエンドビルドエラー修正"
+    description: "バックエンドコードのビルドエラーを修正し、安定した開発環境を構築する"
+    duration: "2週間"
+    start_date: "2025-05-01"
+    end_date: "2025-05-14"
+    tasks:
+      - id: "task1.1"
+        name: "インポートパスの統一"
+        description: "すべてのファイルでインポートパスを kimiyomi/... 形式に統一する"
+        duration: "3日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        file_changes:
+          - path: "backend/main.go"
+            changes:
+              - "authAPI \"kimiyomi/api/v1/auth\" から \"kimiyomi/api/v1/auth\" へ変更"
+              - "compAPI \"kimiyomi/api/v1/compatibility\" から \"kimiyomi/api/v1/compatibility\" へ変更"
+              - "他の同様のインポートパスも修正"
+          - path: "backend/api/v1/auth/auth.go"
+            changes:
+              - "\"kimiyomi/repository\" から正しいパス \"kimiyomi/repository\" へ確認"
+          - path: "backend/api/v1/compatibility/compatibility.go"
+            changes:
+              - "\"kimiyomi/services\" から \"kimiyomi/services\" へ確認"
+              - "\"kimiyomi/models\" から \"kimiyomi/models\" へ確認"
+          - path: "backend/api/v1/content/content.go"
+            changes:
+              - "\"kimiyomi/models\" から \"kimiyomi/models\" へ確認"
+              - "\"kimiyomi/services\" から \"kimiyomi/services\" へ確認"
+          - path: "backend/api/v1/diagnosis/diagnosis.go"
+            changes:
+              - "\"kimiyomi/services\" から \"kimiyomi/services\" へ確認"
+          - path: "backend/api/v1/payment/payment.go"
+            changes:
+              - "\"kimiyomi/models\" から \"kimiyomi/models\" へ確認"
+              - "\"kimiyomi/services\" から \"kimiyomi/services\" へ確認"
+          - path: "backend/api/v1/subscription/subscription.go"
+            changes:
+              - "\"kimiyomi/models\" から \"kimiyomi/models\" へ確認"
+              - "\"kimiyomi/services\" から \"kimiyomi/services\" へ確認"
+
+      - id: "task1.2"
+        name: "リポジトリインターフェースと実装の整合性確保"
+        description: "リポジトリインターフェースと実装の不一致を解消する"
+        duration: "2日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        dependencies: ["task1.1"]
+        status: "完了"
+        file_changes:
+          - path: "backend/repository/compatibility_repository.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "メソッドシグネチャの一致確認"
+          - path: "backend/repository/content_repository.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "メソッドシグネチャの一致確認"
+          - path: "backend/repository/diagnosis_repository.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "メソッドシグネチャの一致確認"
+          - path: "backend/repository/payment_repository.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "メソッドシグネチャの一致確認"
+          - path: "backend/repository/subscription_repository.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "メソッドシグネチャの一致確認"
+          - path: "backend/repository/user_repository.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "メソッドシグネチャの一致確認"
+
+      - id: "task1.3"
+        name: "サービスレイヤーの整合性確保"
+        description: "サービスレイヤーのインターフェースと実装の不一致を解消する"
+        duration: "2日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        dependencies: ["task1.2"]
+        status: "完了"
+        file_changes:
+          - path: "backend/services/auth_service.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "リポジトリ注入の確認"
+          - path: "backend/services/compatibility_service.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "リポジトリ注入の確認"
+          - path: "backend/services/content_service.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "リポジトリ注入の確認"
+          - path: "backend/services/diagnosis_service.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "リポジトリ注入の確認"
+          - path: "backend/services/payment_service.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "リポジトリ注入の確認"
+          - path: "backend/services/subscription_service.go"
+            changes:
+              - "インターフェースと実装の整合性チェック"
+              - "リポジトリ注入の確認"
+
+      - id: "task1.4"
+        name: "テスト修正"
+        description: "テストコードのインポートパスを修正し、テストが正常に実行できることを確認"
+        duration: "1日間"
+        priority: "中"
+        dependencies: ["task1.3"]
+        status: "完了"
+        file_changes:
+          - path: "backend/backend_tests/auth_test.go"
+            changes:
+              - "インポートパスを修正 (src/backend/api/v1/auth → kimiyomi/api/v1/auth)"
+
+      - id: "task1.5"
+        name: "CI設定の更新"
+        description: "GitHub Actionsの設定を更新し、新しいモジュール構造に対応させる"
+        duration: "1日間"
+        priority: "中"
+        dependencies: ["task1.4"]
+        status: "完了"
+        file_changes:
+          - path: ".github/workflows/backend-ci.yml"
+            changes:
+              - "作業ディレクトリパスの確認と修正"
+          - path: ".github/workflows/cloud-run-deploy.yml"
+            changes:
+              - "作業ディレクトリパスの確認と修正"
+
+  - id: "phase2"
+    name: "フロントエンド実装完成"
+    description: "フロントエンドの未実装部分を完成させ、APIと連携できるようにする"
+    duration: "3週間"
+    start_date: "2025-05-15"
+    end_date: "2025-06-04"
+    tasks:
+      - id: "task2.1"
+        name: "認証機能の完成"
+        description: "認証機能を完成させ、Firebase認証と連携する"
+        duration: "5日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        file_changes:
+          - path: "frontend/lib/providers/auth_provider.dart"
+            changes:
+              - "ダミーデータをFirebase認証に置き換える"
+              - "_storage.write(key: 'userId', value: user.id) の実装確認"
+              - "checkAuthStatus() メソッドの実装確認"
+          - path: "frontend/lib/screens/auth_screen.dart"
+            changes:
+              - "AuthForm の onSubmit コールバックを実装"
+              - "Provider との連携を実装"
+          - path: "frontend/lib/widgets/auth_form.dart"
+            changes:
+              - "登録/ログイン切り替え機能の追加"
+              - "エラーハンドリングの強化"
+
+      - id: "task2.2"
+        name: "プロバイダーの認証連携"
+        description: "DiagnosisProvider などで AuthProvider を利用し、認証済みユーザーIDを使用する"
+        duration: "3日間"
+        priority: "高"
+        status: "完了"
+        dependencies: ["task2.1"]
+        file_changes:
+          - path: "frontend/lib/providers/diagnosis_provider.dart"
+            changes:
+              - "startDiagnosis() メソッドのエラーハンドリング強化"
+              - "submitAnswer() のエラーハンドリング強化"
+              - "_loadResult() メソッドの実装確認"
+          - path: "frontend/lib/services/api_service.dart"
+            changes:
+              - "API URL の環境変数対応"
+              - "エラーレスポンスの適切な処理"
+              - "認証トークンの設定処理"
+
+      - id: "task2.3"
+        name: "相性診断機能の完成"
+        description: "相性診断機能を完成させ、バックエンドAPIと連携する"
+        duration: "5日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        dependencies: ["task2.2"]
+        file_changes:
+          - path: "frontend/lib/screens/diagnosis/diagnosis_screen.dart"
+            changes:
+              - "dummyUserId を AuthProvider から取得するように修正"
+              - "エラーハンドリングの強化"
+              - "診断完了時の結果画面遷移の実装"
+          - path: "frontend/lib/providers/diagnosis_provider.dart"
+            changes:
+              - "startDiagnosis() メソッドのエラーハンドリング強化"
+              - "submitAnswer() のエラーハンドリング強化"
+              - "_loadResult() メソッドの実装確認"
+          - path: "frontend/lib/services/api_service.dart"
+            changes:
+              - "API URL の環境変数対応"
+              - "エラーレスポンスの適切な処理"
+              - "認証トークンの設定処理"
+
+      - id: "task2.3"
+        name: "相性診断機能の完成"
+        description: "相性診断機能を完成させ、バックエンドAPIと連携する"
+        duration: "5日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        dependencies: ["task2.2"]
+        file_changes:
+          - path: "frontend/lib/screens/diagnosis/diagnosis_screen.dart"
+            changes:
+              - "dummyUserId を AuthProvider から取得するように修正"
+              - "エラーハンドリングの強化"
+              - "診断完了時の結果画面遷移の実装"
+          - path: "frontend/lib/providers/diagnosis_provider.dart"
+            changes:
+              - "startDiagnosis() メソッドのエラーハンドリング強化"
+              - "submitAnswer() のエラーハンドリング強化"
+              - "_loadResult() メソッドの実装確認"
+          - path: "frontend/lib/services/api_service.dart"
+            changes:
+              - "API URL の環境変数対応"
+              - "エラーレスポンスの適切な処理"
+              - "認証トークンの設定処理"
+
+      - id: "task2.4"
+        name: "ホーム画面の完成"
+        description: "ホーム画面を完成させ、各機能と連携させる"
+        duration: "3日間"
+        priority: "中"
+        dependencies: ["task2.3"]
+        status: "完了"
+        file_changes:
+          - path: "frontend/lib/screens/home_screen.dart"
+            changes:
+              - "Provider との連携実装"
+              - "診断結果の動的表示"
+              - "相性診断結果の動的表示"
+              - "コンテンツリストの動的表示"
+
+      - id: "task2.5"
+        name: "テストコードの更新"
+        description: "フロントエンドのテストコードを更新し、新機能をカバーする"
+        duration: "3日間"
+        priority: "中"
+        dependencies: ["task2.4"]
+        status: "完了"
+        file_changes:
+          - path: "frontend/test/widget_test.dart"
+            changes:
+              - "既存テストの修正"
+          - path: "frontend/test/home_screen_test.dart"
+            changes:
+              - "モックの追加"
+              - "Provider のテスト対応"
+          - path: "frontend/test/auth_provider_test.dart"
+            changes:
+              - "新規ファイル作成"
+              - "認証プロバイダーのテスト実装"
+          - path: "frontend/test/diagnosis_provider_test.dart"
+            changes:
+              - "新規ファイル作成"
+              - "診断プロバイダーのテスト実装"
+
+  - id: "phase3"
+    name: "アーキテクチャ改善とテスト強化"
+    description: "全体のアーキテクチャを改善し、テストカバレッジを向上させる"
+    duration: "3週間"
+    start_date: "2025-06-05"
+    end_date: "2025-06-25"
+    tasks:
+      - id: "task3.1"
+        name: "バックエンドのリポジトリパターン徹底"
+        description: "すべてのサービスでリポジトリパターンを徹底し、直接のDB操作を排除する"
+        duration: "5日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        file_changes:
+          - path: "backend/services/compatibility_service.go"
+            changes:
+              - "直接DB操作をリポジトリ経由に修正"
+          - path: "backend/services/diagnosis_service.go"
+            changes:
+              - "直接DB操作をリポジトリ経由に修正"
+          - path: "backend/services/payment_service.go"
+            changes:
+              - "直接DB操作をリポジトリ経由に修正"
+          - path: "backend/services/subscription_service.go"
+            changes:
+              - "直接DB操作をリポジトリ経由に修正"
+
+      - id: "task3.2"
+        name: "依存性注入の改善"
+        description: "サービス層の依存性を明示的に注入する仕組みを導入する"
+        duration: "3日間"
+        priority: "中"
+        dependencies: ["task3.1"]
+        status: "完了"
+        file_changes:
+          - path: "backend/main.go"
+            changes:
+              - "依存性注入構造の改善"
+              - "InitializeApp 関数のリファクタリング"
+              - "サービス層の依存性を明示的に注入する仕組みを導入"
+
+            - id: "task3.3"
+        name: "エラーハンドリングの標準化"
+        description: "エラーハンドリングパターンを標準化し、一貫性を確保する"
+        duration: "3日間"
+        priority: "中"
+        dependencies: ["task3.2"]
+        status: "完了"
+        file_changes:
+          - path: "backend/services/*.go"
+            changes:
+              - "エラー型の定義と利用の標準化"
+          - path: "backend/api/v1/*/*.go"
+            changes:
+              - "HTTPレスポンスのエラー処理標準化"
+
+      - id: "task3.4"
+        name: "バックエンドテスト強化"
+        description: "バックエンドのテストカバレッジを向上させる"
+        duration: "5日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        dependencies: ["task3.3"]
+        file_changes:
+          - path: "backend/backend_tests/compatibility_test.go"
+            changes:
+              - "新規ファイル作成"
+              - "相性診断機能のテスト実装"
+          - path: "backend/backend_tests/diagnosis_test.go"
+            changes:
+              - "新規ファイル作成"
+              - "診断機能のテスト実装"
+          - path: "backend/backend_tests/payment_test.go"
+            changes:
+              - "新規ファイル作成"
+              - "決済機能のテスト実装"
+          - path: "backend/backend_tests/subscription_test.go"
+            changes:
+              - "新規ファイル作成"
+              - "サブスクリプション機能のテスト実装"
+
+      - id: "task3.5"
+        name: "フロントエンドテスト強化"
+        description: "フロントエンドのテストカバレッジを向上させる"
+        duration: "5日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        dependencies: ["task3.4"]
+        file_changes:
+          - path: "frontend/test/compatibility_provider_test.dart"
+            changes:
+              - "新規ファイル作成"
+              - "相性診断プロバイダーのテスト実装"
+          - path: "frontend/test/services/api_service_test.dart"
+            changes:
+              - "新規ファイル作成"
+              - "APIサービスのテスト実装"
+          - path: "frontend/test/widgets/diagnosis_card_test.dart"
+            changes:
+              - "新規ファイル作成"
+              - "診断カードウィジェットのテスト実装"
+          - path: "frontend/test/widgets/compatibility_chart_test.dart"
+            changes:
+              - "新規ファイル作成"
+              - "相性チャートウィジェットのテスト実装"
+
+  - id: "phase4"
+    name: "最終統合とデプロイ"
+    description: "すべての改善を統合し、最終検証とデプロイを行う"
+    duration: "1週間"
+    start_date: "2025-06-26"
+    end_date: "2025-07-01"
+    tasks:
+      - id: "task4.1"
+        name: "統合テスト実施"
+        description: "すべての機能が連携して動作することを確認するための統合テストを実施する"
+        duration: "2日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        file_changes:
+          - path: "backend/backend_tests/integration_test.go"
+            changes:
+              - "新規ファイル作成"
+              - "主要フロー統合テストの実装"
+          - path: "frontend/integration_test/app_test.dart"
+            changes:
+              - "新規ファイル作成"
+              - "E2Eテストの実装"
+
+      - id: "task4.2"
+        name: "パフォーマンステスト"
+        description: "アプリケーションのパフォーマンスを評価し、必要に応じて最適化を行う"
+        duration: "2日間"
+        priority: "中"
+        dependencies: ["task4.1"]
+        file_changes:
+          - path: "backend/main.go"
+            changes:
+              - "パフォーマンス最適化"
+          - path: "frontend/lib/main.dart"
+            changes:
+              - "パフォーマンス最適化"
+
+      - id: "task4.3"
+        name: "最終デプロイ準備"
+        description: "本番環境へのデプロイに向けて設定を最終調整する"
+        duration: "1日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        dependencies: ["task4.2"]
+        file_changes:
+          - path: ".github/workflows/cloud-run-deploy.yml"
+            changes:
+              - "デプロイ設定の最終確認"
+              - "環境変数の設定確認"
+          - path: "docker-compose.yml"
+            changes:
+              - "コンテナ設定の最終確認"
+          - path: "docker/Dockerfile.backend"
+            changes:
+              - "ビルド設定の最終確認"
+          - path: "docker/Dockerfile.frontend"
+            changes:
+              - "ビルド設定の最終確認"
+
+      - id: "task4.4"
+        name: "デプロイとリリース"
+        description: "改善されたアプリケーションを本番環境にデプロイし、リリースする"
+        duration: "1日間"
+        priority: "高"
+        status: "完了"
+        status: "完了"
+        dependencies: ["task4.3"]
+        file_changes:
+          - path: "README.md"
+            changes:
+              - "リリースノートの追加"
+              - "セットアップ手順の更新"
+
+milestones:
+  - name: "バックエンドビルドエラー解消"
+    date: "2025-05-14"
+    phase: "phase1"
+    deliverables:
+      - "エラーのないバックエンドコード"
+      - "統一されたインポートパス構造"
+    success_criteria:
+      - "すべてのソースコードが正常にビルドされる"
+      - "テストが正常に実行される"
+
+  - name: "フロントエンド完成"
+    date: "2025-06-04"
+    phase: "phase2"
+    deliverables:
+      - "完全に機能するフロントエンドアプリケーション"
+      - "バックエンドAPIとの統合"
+    success_criteria:
+      - "すべての画面が正常に動作する"
+      - "APIリクエストが正常に処理される"
+
+  - name: "テストカバレッジ80%達成"
+    date: "2025-06-25"
+    phase: "phase3"
+    deliverables:
+      - "拡充されたテストスイート"
+      - "改善されたアーキテクチャ"
+    success_criteria:
+      - "テストカバレッジが80%以上"
+      - "リポジトリパターンが徹底されている"
+
+  - name: "本番リリース"
+    date: "2025-07-01"
+    phase: "phase4"
+    deliverables:
+      - "完全に統合されたアプリケーション"
+      - "本番環境デプロイ"
+    success_criteria:
+      - "すべての機能が正常に動作する"
+      - "パフォーマンスが要件を満たす"
+
+progress_tracking:
+  reporting_frequency: "週次"
+  key_performance_indicators:
+    - "タスク完了率"
+    - "バグ検出数"
+    - "テストカバレッジ率"
+    - "コード品質メトリクス"
+  status_template:
+    date: ""
+    planned: []
+    completed: []
+    in_progress: []
+    blocked: []
+    comments: ""
+
+risks_and_mitigations:
+  - risk: "インポートパス変更による新たなエラーの発生"
+    impact: "高"
+    probability: "中"
+    mitigation: "段階的な変更と各ステップでのビルド検証"
+
+  - risk: "APIの互換性問題"
+    impact: "高"
+    probability: "中"
+    mitigation: "APIコントラクトの明確化とバージョニング"
+
+  - risk: "テスト不足による品質問題"
+    impact: "高"
+    probability: "中"
+    mitigation: "テストファーストの徹底とカバレッジ測定の自動化"
+
+  - risk: "デプロイ時の環境差異"
+    impact: "中"
+    probability: "中"
+    mitigation: "ステージング環境での事前検証とCI/CDパイプラインの整備"
+
+resources:
+  team:
+    - role: "バックエンド開発者"
+      allocation: "100%"
+      phases: ["phase1", "phase3", "phase4"]
+
+    - role: "フロントエンド開発者"
+      allocation: "100%"
+      phases: ["phase2", "phase3", "phase4"]
+
+    - role: "QA担当"
+      allocation: "50%"
+      phases: ["phase3", "phase4"]
+
+    - role: "DevOps担当"
+      allocation: "50%"
+      phases: ["phase1", "phase4"]
+
+  tools:
+    - name: "Go言語開発環境"
+      purpose: "バックエンド開発"
+
+    - name: "Flutter開発環境"
+      purpose: "フロントエンド開発"
+
+    - name: "Git/GitHub"
+      purpose: "バージョン管理"
+
+    - name: "GitHub Actions"
+      purpose: "CI/CD"
+
+    - name: "SonarQube"
+      purpose: "コード品質分析"
+
+post_implementation:
+  monitoring:
+    - "アプリケーションパフォーマンスモニタリング"
+    - "エラーログ監視"
+    - "ユーザーフィードバック収集"
+
+  maintenance:
+    - "定期的なセキュリティアップデート"
+    - "パフォーマンス最適化"
+    - "新機能追加計画"
+
+  knowledge_transfer:
+    - "開発者ドキュメントの整備"
+    - "ナレッジベースの構築"
+    - "コードレビュープロセスの確立"

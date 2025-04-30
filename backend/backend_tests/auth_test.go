@@ -5,9 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	authHandler "kimiyomi/api/v1/auth" // Import your auth package
 	"net/http"
 	"net/http/httptest"
-	authHandler "src/backend/api/v1/auth" // Import your auth package
 	"testing"
 
 	"firebase.google.com/go/v4/auth"

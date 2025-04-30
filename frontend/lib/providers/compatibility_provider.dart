@@ -1,27 +1,34 @@
 import 'package:flutter/foundation.dart';
 import '../models/compatibility_model.dart';
 import '../services/api_service.dart';
+import './auth_provider.dart'; // AuthProviderをインポート
 
 class CompatibilityProvider with ChangeNotifier {
   final ApiService _apiService;
+  final AuthProvider _authProvider; // AuthProviderを追加
   DailyCompatibility? _dailyCompatibility;
   List<Compatibility> _history = [];
   bool _isLoading = false;
 
-  CompatibilityProvider({ApiService? apiService})
-      : _apiService = apiService ?? ApiService();
+  CompatibilityProvider({
+    ApiService? apiService,
+    required AuthProvider authProvider, // AuthProviderを必須引数に追加
+  })  : _apiService = apiService ?? ApiService(),
+        _authProvider = authProvider; // AuthProviderを初期化
 
   DailyCompatibility? get dailyCompatibility => _dailyCompatibility;
   List<Compatibility> get history => List.unmodifiable(_history);
   bool get isLoading => _isLoading;
 
-  Future<void> loadDailyCompatibility(String userId) async {
+  Future<void> loadDailyCompatibility() async { // userId引数を削除
     if (_dailyCompatibility?.isToday ?? false) return;
+    if (!_authProvider.isAuthenticated) return; // 認証チェック
 
     _isLoading = true;
     notifyListeners();
 
     try {
+      final userId = _authProvider.currentUser!.id; // AuthProviderからuserIdを取得
       _dailyCompatibility = await _apiService.getDailyCompatibility(userId);
     } finally {
       _isLoading = false;
@@ -29,11 +36,14 @@ class CompatibilityProvider with ChangeNotifier {
     }
   }
 
-  Future<void> loadCompatibilityHistory(String userId) async {
+  Future<void> loadCompatibilityHistory() async { // userId引数を削除
+    if (!_authProvider.isAuthenticated) return; // 認証チェック
+
     _isLoading = true;
     notifyListeners();
 
     try {
+      final userId = _authProvider.currentUser!.id; // AuthProviderからuserIdを取得
       _history = await _apiService.getCompatibilityHistory(userId);
     } finally {
       _isLoading = false;
@@ -41,13 +51,21 @@ class CompatibilityProvider with ChangeNotifier {
     }
   }
 
-  Future<Compatibility> calculateCompatibility(String user1Id, String user2Id) async {
+  Future<Compatibility> calculateCompatibility(String user2Id) async { // user1Id引数を削除
+    if (!_authProvider.isAuthenticated) {
+      throw Exception('User not authenticated'); // 認証されていない場合は例外をスロー
+    }
+
     _isLoading = true;
     notifyListeners();
 
     try {
+      final user1Id = _authProvider.currentUser!.id; // AuthProviderからuser1Idを取得
       final compatibility = await _apiService.calculateCompatibility(user1Id, user2Id);
-      _history.insert(0, compatibility);
+      // 履歴への追加は任意。重複を避けるなどのロジックが必要な場合がある
+      if (!_history.any((c) => (c.user1.id == user1Id && c.user2.id == user2Id) || (c.user1.id == user2Id && c.user2.id == user1Id))) {
+         _history.insert(0, compatibility);
+      }
       return compatibility;
     } finally {
       _isLoading = false;

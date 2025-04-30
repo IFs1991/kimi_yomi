@@ -71,42 +71,33 @@ type RegisterRequest struct {
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid request: %v", err)})
 		return
 	}
 
 	params := (&auth.UserToCreate{}).
 		Email(req.Email).
 		Password(req.Password).
-		EmailVerified(false). // Important: Start unverified.
+		EmailVerified(false).
 		DisplayName(req.DisplayName)
 
 	user, err := h.firebaseAuth.CreateUser(c, params)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("error creating user: %v", err)})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to create user: %v", err)})
 		return
 	}
 
-	// Send verification email.  This is crucial for security.
 	if err := h.sendVerificationEmail(c, user.UID, req.Email); err != nil {
-		//  Delete the user if email sending fails.
 		h.firebaseAuth.DeleteUser(context.Background(), user.UID)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send verification email. User registration rolled back."})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send verification email. User registration rolled back."})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully.  Check your email for verification.", "uid": user.UID})
-}
-
-// --- Verify Age (Custom Claims) ---
-
-type VerifyAgeRequest struct {
-	Age int `json:"age" binding:"required"`
+	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully. Check your email for verification.", "uid": user.UID})
 }
 
 func (h *AuthHandler) VerifyAge(c *gin.Context) {
-	// Get the user ID from the JWT (you'd normally do this in middleware)
-	uid := h.getUIDFromContext(c) // Get UID from the request context (set by middleware)
+	uid := h.getUIDFromContext(c)
 	if uid == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -114,7 +105,7 @@ func (h *AuthHandler) VerifyAge(c *gin.Context) {
 
 	var req VerifyAgeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid request: %v", err)})
 		return
 	}
 
@@ -123,34 +114,27 @@ func (h *AuthHandler) VerifyAge(c *gin.Context) {
 		return
 	}
 
-	// Set custom claims.
 	claims := map[string]interface{}{
 		"ageVerified": true,
 		"age":         req.Age,
 	}
 	if err := h.firebaseAuth.SetCustomUserClaims(c, uid, claims); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set custom claims"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to set custom claims"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Age verified successfully"})
 }
 
-// --- Reset Password ---
-type ResetPasswordRequest struct {
-	Email string `json:"email" binding:"required"`
-}
-
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	var req ResetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid request: %v", err)})
 		return
 	}
 
-	// Generate and send the password reset email.
 	if err := h.sendPasswordResetEmail(c, req.Email); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to send password reset email: %v", err)})
 		return
 	}
 

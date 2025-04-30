@@ -4,11 +4,11 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'src/backend/**'
+      - 'backend/**'
   pull_request:
     branches: [ main ]
     paths:
-      - 'src/backend/**'
+      - 'backend/**'
 
 jobs:
   test:
@@ -42,12 +42,12 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd src/backend
+        cd backend
         go mod download
 
     - name: Run tests
       run: |
-        cd src/backend
+        cd backend
         go test -v ./...
       env:
         DB_HOST: localhost
@@ -61,7 +61,7 @@ jobs:
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v3
       with:
-        working-directory: src/backend
+        working-directory: backend
 
   build-and-deploy:
     needs: test
@@ -83,7 +83,7 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: ./src/backend
+        context: ./backend
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/kimiyomi-backend:latest
 

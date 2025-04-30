@@ -1,0 +1,701 @@
+# キミヨミアプリ課金フロー実装計画書
+
+project:
+  name: "キミヨミアプリ課金フロー実装"
+  description: "キミヨミアプリのフロントエンド側での完全な課金フロー（購入画面、確認画面、完了画面）の実装"
+  start_date: "2025-05-01"
+  end_date: "2025-06-30"
+  stakeholders:
+    - role: "プロジェクトマネージャー"
+      responsibilities: ["進捗管理", "リソース割り当て", "リスク管理"]
+    - role: "フロントエンド開発者"
+      responsibilities: ["UI実装", "APIインテグレーション", "テスト"]
+    - role: "バックエンド開発者"
+      responsibilities: ["API提供", "決済処理サポート", "データモデル検証"]
+    - role: "UX/UIデザイナー"
+      responsibilities: ["画面デザイン", "ユーザーフロー設計", "プロトタイプ作成"]
+    - role: "QAエンジニア"
+      responsibilities: ["テストケース作成", "統合テスト", "回帰テスト"]
+
+phases:
+  - id: "phase1"
+    name: "分析と計画"
+    duration: "1週間"
+    start_date: "2025-05-01"
+    end_date: "2025-05-07"
+    description: "要件分析と現状の課金システムの評価"
+    tasks:
+      - id: "task1.1"
+        name: "現状の課金システム分析"
+        duration: "2日間"
+        description: "既存のコードとシステム構造の評価"
+        subtasks:
+          - "バックエンドAPI評価"
+          - "Stripe統合状況確認"
+          - "in-app purchase実装状況確認"
+        deliverables:
+          - "現状分析レポート"
+        priority: "高"
+
+      - id: "task1.2"
+        name: "要件定義"
+        duration: "2日間"
+        description: "課金フローの詳細要件の定義"
+        dependencies: ["task1.1"]
+        subtasks:
+          - "サブスクリプションプラン定義"
+          - "購入プロセスのユーザーストーリー作成"
+          - "エラーシナリオの定義"
+        deliverables:
+          - "要件仕様書"
+        priority: "高"
+
+      - id: "task1.3"
+        name: "技術選定と設計"
+        duration: "3日間"
+        description: "必要な技術コンポーネントの選定と全体アーキテクチャの設計"
+        dependencies: ["task1.2"]
+        subtasks:
+          - "状態管理アプローチの選定"
+          - "UI/UXライブラリの評価"
+          - "プラットフォーム特有の要件確認（iOS/Android）"
+        deliverables:
+          - "技術設計書"
+          - "アーキテクチャ図"
+        priority: "高"
+
+  - id: "phase2"
+    name: "UI/UXデザイン"
+    duration: "1週間"
+    start_date: "2025-05-08"
+    end_date: "2025-05-14"
+    description: "課金フローのユーザーインターフェース設計"
+    tasks:
+      - id: "task2.1"
+        name: "ユーザーフロー設計"
+        duration: "2日間"
+        description: "課金プロセスの全体的なユーザーフロー設計"
+        dependencies: ["task1.3"]
+        subtasks:
+          - "基本フローの設計"
+          - "代替フローの設計"
+          - "エラーフローの設計"
+        deliverables:
+          - "ユーザーフロー図"
+        priority: "高"
+
+      - id: "task2.2"
+        name: "ワイヤーフレーム作成"
+        duration: "2日間"
+        description: "各画面のワイヤーフレーム設計"
+        dependencies: ["task2.1"]
+        subtasks:
+          - "購入画面のワイヤーフレーム"
+          - "確認画面のワイヤーフレーム"
+          - "完了画面のワイヤーフレーム"
+          - "エラー画面のワイヤーフレーム"
+        deliverables:
+          - "ワイヤーフレーム一式"
+        priority: "高"
+
+      - id: "task2.3"
+        name: "視覚デザイン"
+        duration: "3日間"
+        description: "アプリの既存UIと整合性のある視覚デザインの作成"
+        dependencies: ["task2.2"]
+        subtasks:
+          - "カラースキーム適用"
+          - "タイポグラフィの適用"
+          - "アイコンとイラストの作成"
+        deliverables:
+          - "Figmaデザイン一式"
+        priority: "中"
+
+  - id: "phase3"
+    name: "購入画面の実装"
+    duration: "2週間"
+    start_date: "2025-05-15"
+    end_date: "2025-05-28"
+    description: "サブスクリプションプランと購入画面の実装"
+    tasks:
+      - id: "task3.1"
+        name: "モデル実装"
+        duration: "2日間"
+        description: "サブスクリプション・プラン・支払いモデルの実装"
+        dependencies: ["task2.3"]
+        subtasks:
+          - "サブスクリプションモデルの実装"
+          - "料金プランモデルの実装"
+          - "支払い情報モデルの実装"
+        deliverables:
+          - "モデルクラス一式"
+        priority: "高"
+
+      - id: "task3.2"
+        name: "プラン表示画面実装"
+        duration: "3日間"
+        description: "利用可能なサブスクリプションプランを表示する画面の実装"
+        dependencies: ["task3.1"]
+        subtasks:
+          - "プラン一覧UI実装"
+          - "プラン詳細表示実装"
+          - "比較機能実装"
+        deliverables:
+          - "プラン表示画面コード"
+        priority: "高"
+
+      - id: "task3.3"
+        name: "購入プロセス実装"
+        duration: "5日間"
+        description: "in-app purchaseとStripe連携のための実装"
+        dependencies: ["task3.2"]
+        subtasks:
+          - "プラットフォーム別購入処理（iOS/Android）"
+          - "Stripe支払いフォーム連携"
+          - "支払い方法選択実装"
+        deliverables:
+          - "購入プロセスコード"
+        priority: "高"
+
+      - id: "task3.4"
+        name: "単体テスト作成と実行"
+        duration: "4日間"
+        description: "購入画面コンポーネントのテスト"
+        dependencies: ["task3.3"]
+        subtasks:
+          - "モデルのユニットテスト"
+          - "UIコンポーネントテスト"
+          - "支払いロジックのモックテスト"
+        deliverables:
+          - "テストコード"
+          - "テスト結果レポート"
+        priority: "中"
+
+  - id: "phase4"
+    name: "確認・完了画面の実装"
+    duration: "2週間"
+    start_date: "2025-05-29"
+    end_date: "2025-06-11"
+    description: "購入確認画面と完了画面の実装"
+    tasks:
+      - id: "task4.1"
+        name: "確認画面実装"
+        duration: "4日間"
+        description: "購入前の確認画面の実装"
+        dependencies: ["task3.4"]
+        subtasks:
+          - "選択プラン詳細の表示"
+          - "支払い情報サマリーの表示"
+          - "利用規約と確認ボタンの実装"
+        deliverables:
+          - "確認画面コード"
+        priority: "高"
+
+      - id: "task4.2"
+        name: "支払い処理実装"
+        duration: "3日間"
+        description: "バックエンドAPIと連携した支払い処理の実装"
+        dependencies: ["task4.1"]
+        subtasks:
+          - "支払いリクエスト送信"
+          - "トランザクション状態管理"
+          - "エラーハンドリング"
+        deliverables:
+          - "支払い処理コード"
+        priority: "高"
+
+      - id: "task4.3"
+        name: "完了画面実装"
+        duration: "3日間"
+        description: "購入完了後のサマリー画面の実装"
+        dependencies: ["task4.2"]
+        subtasks:
+          - "トランザクション結果表示"
+          - "購入詳細の表示"
+          - "次のステップ案内"
+        deliverables:
+          - "完了画面コード"
+        priority: "高"
+
+      - id: "task4.4"
+        name: "単体テスト作成と実行"
+        duration: "4日間"
+        description: "確認・完了画面コンポーネントのテスト"
+        dependencies: ["task4.3"]
+        subtasks:
+          - "確認画面のユニットテスト"
+          - "支払い処理のユニットテスト"
+          - "完了画面のユニットテスト"
+        deliverables:
+          - "テストコード"
+          - "テスト結果レポート"
+        priority: "中"
+
+  - id: "phase5"
+    name: "統合テストとバグ修正"
+    duration: "1週間"
+    start_date: "2025-06-12"
+    end_date: "2025-06-18"
+    description: "課金フロー全体のテストとバグ修正"
+    tasks:
+      - id: "task5.1"
+        name: "統合テスト実施"
+        duration: "3日間"
+        description: "エンドツーエンドのテスト実施"
+        dependencies: ["task4.4"]
+        subtasks:
+          - "異なるプラン選択テスト"
+          - "異なる支払い方法テスト"
+          - "エラーケーステスト"
+        deliverables:
+          - "統合テスト結果レポート"
+        priority: "高"
+
+      - id: "task5.2"
+        name: "バグ修正"
+        duration: "3日間"
+        description: "テスト中に発見された問題の修正"
+        dependencies: ["task5.1"]
+        subtasks:
+          - "UIバグ修正"
+          - "ロジックバグ修正"
+          - "エッジケース対応"
+        deliverables:
+          - "バグ修正コード"
+          - "修正検証レポート"
+        priority: "高"
+
+      - id: "task5.3"
+        name: "パフォーマンス最適化"
+        duration: "1日間"
+        description: "課金フローのパフォーマンス最適化"
+        dependencies: ["task5.2"]
+        subtasks:
+          - "レンダリング最適化"
+          - "ネットワークリクエスト最適化"
+          - "状態管理最適化"
+        deliverables:
+          - "最適化コード"
+          - "パフォーマンスレポート"
+        priority: "中"
+
+  - id: "phase6"
+    name: "デプロイと監視"
+    duration: "1週間"
+    start_date: "2025-06-19"
+    end_date: "2025-06-25"
+    description: "本番環境へのデプロイと初期監視"
+    tasks:
+      - id: "task6.1"
+        name: "テスト環境デプロイ"
+        duration: "2日間"
+        description: "テスト環境への機能デプロイとサンドボックステスト"
+        dependencies: ["task5.3"]
+        subtasks:
+          - "テスト環境ビルド"
+          - "Stripe/Apple/Google決済サンドボックステスト"
+          - "QA検証"
+        deliverables:
+          - "テスト環境デプロイレポート"
+        priority: "高"
+
+      - id: "task6.2"
+        name: "本番環境デプロイ"
+        duration: "1日間"
+        description: "本番環境への機能デプロイ"
+        dependencies: ["task6.1"]
+        subtasks:
+          - "本番環境ビルド"
+          - "本番環境デプロイ"
+          - "動作確認"
+        deliverables:
+          - "本番環境デプロイレポート"
+        priority: "高"
+
+      - id: "task6.3"
+        name: "監視設定"
+        duration: "2日間"
+        description: "課金関連のモニタリングとアラート設定"
+        dependencies: ["task6.2"]
+        subtasks:
+          - "エラー監視設定"
+          - "トランザクション監視設定"
+          - "アラート設定"
+        deliverables:
+          - "モニタリング設定ドキュメント"
+        priority: "中"
+
+      - id: "task6.4"
+        name: "フィードバック収集と初期改善"
+        duration: "2日間"
+        description: "初期ユーザーからのフィードバック収集と即時改善"
+        dependencies: ["task6.2"]
+        subtasks:
+          - "フィードバック仕組み実装"
+          - "初期データ分析"
+          - "クイック改善"
+        deliverables:
+          - "初期フィードバックレポート"
+          - "改善計画"
+        priority: "中"
+
+milestones:
+  - name: "分析と計画完了"
+    date: "2025-05-07"
+    phase: "phase1"
+    deliverables:
+      - "要件仕様書"
+      - "技術設計書"
+    success_criteria:
+      - "課金フローの要件が明確に定義されている"
+      - "実装に必要な技術コンポーネントが特定されている"
+
+  - name: "UI/UXデザイン完了"
+    date: "2025-05-14"
+    phase: "phase2"
+    deliverables:
+      - "ユーザーフロー図"
+      - "ワイヤーフレーム一式"
+      - "Figmaデザイン一式"
+    success_criteria:
+      - "すべての必要な画面のデザインが完成している"
+      - "ユーザーフローが明確に定義されている"
+
+  - name: "購入画面実装完了"
+    date: "2025-05-28"
+    phase: "phase3"
+    deliverables:
+      - "プラン表示画面"
+      - "購入プロセスの実装"
+      - "単体テスト結果"
+    success_criteria:
+      - "ユーザーがプランを閲覧・選択できる"
+      - "in-app purchase/Stripeとの連携が機能する"
+      - "単体テストが成功している"
+
+  - name: "確認・完了画面実装完了"
+    date: "2025-06-11"
+    phase: "phase4"
+    deliverables:
+      - "確認画面"
+      - "完了画面"
+      - "単体テスト結果"
+    success_criteria:
+      - "ユーザーが購入前に確認できる"
+      - "支払い処理が完了するとユーザーに通知される"
+      - "単体テストが成功している"
+
+  - name: "統合テスト完了"
+    date: "2025-06-18"
+    phase: "phase5"
+    deliverables:
+      - "統合テスト結果"
+      - "バグ修正完了レポート"
+    success_criteria:
+      - "エンドツーエンドテストが成功している"
+      - "すべての主要バグが修正されている"
+
+  - name: "デプロイと監視完了"
+    date: "2025-06-25"
+    phase: "phase6"
+    deliverables:
+      - "デプロイ完了レポート"
+      - "監視設定ドキュメント"
+    success_criteria:
+      - "機能が本番環境で利用可能である"
+      - "監視とアラートが正しく設定されている"
+
+  - name: "プロジェクト完了"
+    date: "2025-06-30"
+    phase: "phase6"
+    deliverables:
+      - "完了報告書"
+      - "ナレッジ移管ドキュメント"
+    success_criteria:
+      - "すべての機能が予定通り実装されている"
+      - "チームにナレッジが適切に移管されている"
+
+dependencies:
+  - from: "task1.1"
+    to: "task1.2"
+    type: "finish-to-start"
+    description: "現状分析が完了してから要件定義を開始する"
+
+  - from: "task1.2"
+    to: "task1.3"
+    type: "finish-to-start"
+    description: "要件定義が完了してから技術選定を開始する"
+
+  - from: "phase1"
+    to: "phase2"
+    type: "finish-to-start"
+    description: "分析と計画フェーズが完了してからUI/UXデザインフェーズを開始する"
+
+  - from: "phase2"
+    to: "phase3"
+    type: "finish-to-start"
+    description: "UI/UXデザインフェーズが完了してから購入画面実装フェーズを開始する"
+
+  - from: "phase3"
+    to: "phase4"
+    type: "finish-to-start"
+    description: "購入画面実装フェーズが完了してから確認・完了画面実装フェーズを開始する"
+
+  - from: "phase4"
+    to: "phase5"
+    type: "finish-to-start"
+    description: "確認・完了画面実装フェーズが完了してから統合テストとバグ修正フェーズを開始する"
+
+  - from: "phase5"
+    to: "phase6"
+    type: "finish-to-start"
+    description: "統合テストとバグ修正フェーズが完了してからデプロイと監視フェーズを開始する"
+
+risks_and_mitigations:
+  - risk: "API連携の不一致"
+    impact: "高"
+    probability: "中"
+    mitigation: "バックエンドチームとの継続的な連携とAPI仕様の早期確定"
+
+  - risk: "プラットフォーム固有の課金問題"
+    impact: "高"
+    probability: "中"
+    mitigation: "iOS/Androidそれぞれの環境でのサンドボックステストを早期から実施"
+
+  - risk: "ユーザー体験の不満"
+    impact: "高"
+    probability: "低"
+    mitigation: "プロトタイプを用いた早期のユーザーテストとフィードバック収集"
+
+  - risk: "Stripe/決済プロバイダの仕様変更"
+    impact: "中"
+    probability: "低"
+    mitigation: "SDKの最新バージョン監視と柔軟なアーキテクチャ設計"
+
+resources:
+  team:
+    - role: "フロントエンド開発者"
+      count: 2
+      allocation: "100%"
+      skills: ["Flutter", "Dart", "in-app purchase", "UI実装"]
+
+    - role: "バックエンド開発者"
+      count: 1
+      allocation: "30%"
+      skills: ["API開発", "Stripe統合", "支払い処理"]
+
+    - role: "UX/UIデザイナー"
+      count: 1
+      allocation: "50%"
+      skills: ["モバイルUI", "支払いフロー設計", "Figma"]
+
+    - role: "QAエンジニア"
+      count: 1
+      allocation: "50%"
+      skills: ["自動化テスト", "決済テスト", "レグレッションテスト"]
+
+  tools:
+    - name: "Flutter/Dart"
+      purpose: "フロントエンド開発"
+
+    - name: "in_app_purchase プラグイン"
+      purpose: "iOS/Android課金統合"
+
+    - name: "Stripe SDK for Flutter"
+      purpose: "カード決済処理"
+
+    - name: "Figma"
+      purpose: "UI/UXデザイン"
+
+    - name: "Firebase"
+      purpose: "クラッシュレポートとモニタリング"
+
+    # --- 追加されたツール ---
+    - name: "provider"
+      purpose: "状態管理"
+    - name: "go_router"
+      purpose: "ルーティング管理"
+    - name: "http"
+      purpose: "HTTP通信"
+    - name: "flutter_secure_storage"
+      purpose: "セキュアなデータ保存"
+    - name: "mockito / build_runner / integration_test"
+      purpose: "テストフレームワーク"
+
+follow_up_plan:
+  - action: "ユーザーフィードバック収集"
+    timeline: "デプロイ後1週間"
+    description: "初期ユーザーからのフィードバックを収集し、即時改善点を特定する"
+
+  - action: "パフォーマンスモニタリング"
+    timeline: "デプロイ後2週間"
+    description: "課金フローのパフォーマンスと完了率を測定し、最適化ポイントを特定する"
+
+  - action: "A/Bテスト計画"
+    timeline: "デプロイ後1ヶ月"
+    description: "異なる購入フローやUIのバリエーションをテストし、コンバージョン率を向上させる"
+
+implementation_files:
+  existing_files:
+    - file: "pubspec.yaml"
+      changes:
+        - "in_app_purchase、Stripe SDKなどの依存関係の確認・修正【完了】"
+        - "状態管理ライブラリなどの追加パッケージの追加【完了】"
+      priority: "高"
+
+    - file: "lib/services/api_service.dart"
+      changes:
+        - "決済関連のAPIエンドポイント呼び出しメソッドの追加/修正【完了】"
+        - "支払い処理・サブスクリプション管理APIの実装【完了】"
+      priority: "高"
+
+    - file: "lib/main.dart"
+      changes:
+        - "課金関連の初期化処理の追加"
+        - "決済画面のルーティング追加"
+      priority: "中"
+
+  new_files:
+    screens:
+      - file: "lib/screens/payment/plan_selection_screen.dart"
+        description: "サブスクリプションプランの一覧と選択UI"
+        dependencies: ["lib/models/plan.dart", "lib/providers/subscription_provider.dart"]
+
+      - file: "lib/screens/payment/purchase_screen.dart"
+        description: "支払い方法選択と課金実行画面"
+        dependencies: ["lib/services/payment_service.dart", "lib/providers/payment_provider.dart"]
+
+      - file: "lib/screens/payment/confirmation_screen.dart"
+        description: "購入前の確認画面"
+        dependencies: ["lib/widgets/payment/payment_summary.dart"]
+
+      - file: "lib/screens/payment/completion_screen.dart"
+        description: "購入完了後の表示画面"
+        dependencies: ["lib/models/purchase.dart"]
+
+    models:
+      - file: "lib/models/payment_method.dart"
+        description: "支払い方法を表現するモデルクラス"
+        dependencies: []
+
+      - file: "lib/models/plan.dart"
+        description: "料金プランを表現するモデルクラス"
+        dependencies: []
+
+      - file: "lib/models/purchase.dart"
+        description: "購入トランザクションを表現するモデルクラス"
+        dependencies: ["lib/models/plan.dart", "lib/models/payment_method.dart"]
+
+      - file: "lib/models/subscription.dart"
+        description: "ユーザーのサブスクリプション情報を表現するモデルクラス"
+        dependencies: ["lib/models/plan.dart"]
+
+    providers:
+      - file: "lib/providers/payment_provider.dart"
+        description: "支払い処理の状態管理クラス"
+        dependencies: ["lib/services/payment_service.dart", "lib/services/in_app_purchase_service.dart", "lib/models/payment_method.dart", "lib/models/plan.dart", "lib/models/purchase.dart"]
+
+      - file: "lib/providers/subscription_provider.dart"
+        description: "サブスクリプション状態管理クラス"
+        dependencies: ["lib/services/subscription_service.dart", "lib/models/subscription.dart"]
+
+    services:
+      - file: "lib/services/payment_service.dart"
+        description: "決済処理サービスクラス"
+        dependencies: ["lib/services/api_service.dart"]
+
+      - file: "lib/services/in_app_purchase_service.dart"
+        description: "アプリ内課金サービスクラス"
+        dependencies: []
+
+      - file: "lib/services/subscription_service.dart"
+        description: "サブスクリプション管理サービスクラス"
+        dependencies: ["lib/services/api_service.dart"]
+
+    widgets:
+      - file: "lib/widgets/payment/plan_card.dart"
+        description: "プラン表示カードウィジェット"
+        dependencies: ["lib/models/plan.dart"]
+
+      - file: "lib/widgets/payment/payment_form.dart"
+        description: "支払い情報入力フォームウィジェット"
+        dependencies: ["lib/models/payment_method.dart"]
+
+      - file: "lib/widgets/payment/payment_summary.dart"
+        description: "支払い情報サマリー表示ウィジェット"
+        dependencies: ["lib/models/plan.dart", "lib/models/payment_method.dart"]
+
+      - file: "lib/widgets/payment/subscription_status.dart"
+        description: "サブスクリプションステータス表示ウィジェット"
+        dependencies: ["lib/models/subscription.dart"]
+
+    tests:
+      - file: "test/payment/models_test.dart"
+        description: "支払い関連モデルのユニットテスト"
+        dependencies: ["lib/models/plan.dart", "lib/models/payment_method.dart", "lib/models/purchase.dart"]
+
+      - file: "test/payment/services_test.dart"
+        description: "支払い関連サービスのユニットテスト"
+        dependencies: ["lib/services/payment_service.dart", "lib/services/in_app_purchase_service.dart"]
+
+      - file: "test/payment/screens_test.dart"
+        description: "支払い関連画面のウィジェットテスト"
+        dependencies: ["lib/screens/payment/plan_selection_screen.dart", "lib/screens/payment/purchase_screen.dart"]
+
+      - file: "test/payment/integration_test.dart"
+        description: "支払いフロー全体の統合テスト"
+        dependencies: ["lib/screens/payment/plan_selection_screen.dart", "lib/screens/payment/purchase_screen.dart", "lib/screens/payment/confirmation_screen.dart", "lib/screens/payment/completion_screen.dart"]
+
+  implementation_order:
+    - step: 1
+      description: "モデル層の実装"
+      files:
+        - "lib/models/payment_method.dart"
+        - "lib/models/plan.dart"
+        - "lib/models/purchase.dart"
+        - "lib/models/subscription.dart"
+      rationale: "データ構造を先に定義することでアプリの基礎を固める"
+
+    - step: 2
+      description: "サービス層の実装"
+      files:
+        - "lib/services/payment_service.dart"
+        - "lib/services/in_app_purchase_service.dart"
+        - "lib/services/subscription_service.dart"
+        - "lib/services/api_service.dart（更新）"
+      rationale: "APIとの連携を確立し、ビジネスロジックの基盤を作る"
+
+    - step: 3
+      description: "状態管理層の実装"
+      files:
+        - "lib/providers/payment_provider.dart"
+        - "lib/providers/subscription_provider.dart"
+      rationale: "データフローを整備し、UIとのブリッジを確立する"
+
+    - step: 4
+      description: "ウィジェット層の実装"
+      files:
+        - "lib/widgets/payment/plan_card.dart"
+        - "lib/widgets/payment/payment_form.dart"
+        - "lib/widgets/payment/payment_summary.dart"
+        - "lib/widgets/payment/subscription_status.dart"
+      rationale: "再利用可能なUIコンポーネントを作成し、一貫したデザインを実現"
+
+    - step: 5
+      description: "画面層の実装"
+      files:
+        - "lib/screens/payment/plan_selection_screen.dart"
+        - "lib/screens/payment/purchase_screen.dart"
+        - "lib/screens/payment/confirmation_screen.dart"
+        - "lib/screens/payment/completion_screen.dart"
+        - "lib/main.dart（更新）"
+      rationale: "全コンポーネントを組み合わせて完全なユーザーフローを構築"
+
+    - step: 6
+      description: "テストの実装と実行"
+      files:
+        - "test/payment/models_test.dart"
+        - "test/payment/services_test.dart"
+        - "test/payment/screens_test.dart"
+        - "test/payment/integration_test.dart"
+      rationale: "各層のテストを実行し、品質を確保"

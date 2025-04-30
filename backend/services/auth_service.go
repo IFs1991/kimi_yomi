@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"kimiyomi/models"
 	"kimiyomi/repository"
 
@@ -28,7 +29,7 @@ func NewAuthService(repo repository.UserRepository) AuthService {
 func (s *authService) Register(ctx context.Context, email, password string) (*models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
 	user := &models.User{
@@ -37,7 +38,7 @@ func (s *authService) Register(ctx context.Context, email, password string) (*mo
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
 	return user, nil
@@ -46,11 +47,11 @@ func (s *authService) Register(ctx context.Context, email, password string) (*mo
 func (s *authService) Login(ctx context.Context, email, password string) (*models.User, error) {
 	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user by email: %w", err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("password mismatch: %w", err)
 	}
 
 	return user, nil
@@ -59,16 +60,16 @@ func (s *authService) Login(ctx context.Context, email, password string) (*model
 func (s *authService) ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string) error {
 	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get user by ID: %w", err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
-		return err
+		return fmt.Errorf("old password mismatch: %w", err)
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to hash new password: %w", err)
 	}
 
 	user.Password = string(hashedPassword)
